@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const config = require("./config.json");
+//const config = require("./config.json");
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 const prefix = "!";
 
@@ -129,5 +129,5 @@ client.on("messageCreate", function(message) {
   }
 });
 
-client.login(config.BOT_TOKEN);
-//client.login(process.env.DJS_TOKEN);
+//client.login(config.BOT_TOKEN);
+client.login(process.env.GRIFLET_TOKEN);
