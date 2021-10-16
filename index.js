@@ -93,7 +93,7 @@ async function messageLast(map, returnMessage){
     mirror(outputString, returnMessage);
   } else {
     // Want to split the output into chunks and send each chunk to mirror
-    let chunkedOutput = outputString.match(/.{1,3750}/g);
+    let chunkedOutput = outputString.match(/[\s\S]{1,3750}/g);
     chunkedOutput.forEach(chunk => {
       mirror(chunk, returnMessage);
     });
