@@ -49,18 +49,24 @@ function ping(message) {
   return;
 }
 
-function messageFetch(channel) {
+function messageFetch(channel) { // problem with deleted messages lives here
+  console.log("Fetching messages from channel... " + channel.name);
+  console.log(channel);
   return new Promise((resolve, reject) => {
-    if (channel.lastMessageId != undefined) {
-      channel.messages.fetch(channel.lastMessageId)
-        .then(message => {
-          resolve(message);
-        });
+    if (channel.lastMessageId != undefined) { // deleted messages still have an ID but retrieve no data
+        channel.messages.fetch(channel.lastMessageId) // this is what throws the error
+          .then(message => {
+            resolve(message);
+            }).catch(error => {
+            reject(error);
+          });
     }
   });
+  console.log("Fetching messages finished");
 }
 
 async function messageLast(map, returnMessage){
+  console.log("Finding Last Message started");
   const listKeys = Array.from( map.keys() );
   let outputString = "Report For Categories Containing Text Channels:\n";
   for (let index = 0; index < map.size; index++) {
@@ -70,12 +76,14 @@ async function messageLast(map, returnMessage){
     let newestChannel; // storage for the channel containing the newest message
     for (let y = 0; y < channelList.length; y++) {
       if (channelList[y].lastMessageId != undefined) {
-        lastMessage = await messageFetch(channelList[y]);
-        currentMessageDate = new Date(lastMessage.createdTimestamp);
-        if (currentMessageDate > newestMessageDate) {
-          newestMessageDate = currentMessageDate;
-          newestMessage = lastMessage;
-          newestChannel = channelList[y].name;
+        lastMessage = await messageFetch(channelList[y]).catch(err => console.error(err));
+        if (lastMessage != undefined) {
+          currentMessageDate = new Date(lastMessage.createdTimestamp);
+          if (currentMessageDate > newestMessageDate) {
+            newestMessageDate = currentMessageDate;
+            newestMessage = lastMessage;
+            newestChannel = channelList[y].name;
+          }
         }
       }
     }
@@ -84,18 +92,22 @@ async function messageLast(map, returnMessage){
     }
   }
   mirror(outputString, returnMessage);
+  console.log("Finding Last Message complete");
   return;
 }
 
 function childList(category) {
+  console.log("childList started");
   const listChannels = [];
   category.children.forEach(child => {
     listChannels.push(child)
   });
+  console.log("childList ended");
   return listChannels;
 }
 
 function categoryList(message) {
+  console.log("categoryList started");
   const map = new Map();
   // A list of each CATEGORY
   const categoryChannels = message.guild.channels.cache.filter(channel => channel.type === 'GUILD_CATEGORY');
@@ -103,6 +115,7 @@ function categoryList(message) {
     map.set(category.name, childList(category));
   });
   messageLast(map, message);
+  console.log("categoryList ended");
   return;
 }
 
