@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-//const config = require("./config.json");
+const config = require("./config.json");
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 const prefix = "!";
 
@@ -38,8 +38,12 @@ function resolveDate(Timestamp) {
 function mirror(textString, message) {
   // Echoes strings to both a reply on Discord and the console log one after the other.
   console.log(textString);
-  message.reply(textString, message); // sends output as a reply to existing message
-  //message.channel.send(textString); // sends output as unique message
+  const allowedLength = 1750;
+  let chunkedOutput = outputString.match(/[\s\S]{1,allowedLength}/g); // Splits output into character chunks equal to allowedLength in size or smaller
+  chunkedOutput.forEach(chunk => {
+    message.reply(textString, message); // sends chunks as a reply to existing message
+    //message.channel.send(textString); // sends output as unique message
+  });
   return;
 }
 
@@ -89,15 +93,7 @@ async function messageLast(map, returnMessage){
     }
   }
   console.log("Size of outputString: " + outputString.length);
-  if (outputString.length < 3750) {
-    mirror(outputString, returnMessage);
-  } else {
-    // Want to split the output into chunks and send each chunk to mirror
-    let chunkedOutput = outputString.match(/[\s\S]{1,3750}/g);
-    chunkedOutput.forEach(chunk => {
-      mirror(chunk, returnMessage);
-    });
-  }
+  mirror(outputString, returnMessage);
   return;
 }
 
@@ -120,6 +116,69 @@ function categoryList(message) {
   return;
 }
 
+function rosterCheck(message) {
+  return new Promise((resolve, reject) => {
+    message.guild.channels.cache.filter(channel => channel.name === 'roster').forEach(channel => {
+      channel.messages.fetch({ limit: 100 }).then(messages => {
+        console.log(`Received ${messages.size} messages from #roster`);
+        if (messages.size > 2) {
+          console.log(`There are new sheets to be checked.`);
+          resolve(messages.size);
+        } else {
+          console.log(`There are no sheets to be checked.`);
+          resolve(null);
+        }
+      });
+    });
+  });
+}
+
+function questCheck(message) {
+  return new Promise((resolve, reject) => {
+    message.guild.channels.cache.filter(channel => channel.name === 'quest-board').forEach(channel => {
+      channel.messages.fetch({ limit: 100 }).then(messages => {
+        console.log(`There are currently ${messages.size} quests on the board\n`);
+        messages.forEach(message => {
+          //let reactions = message.reactions.cache.find(emoji => emoji.emoji.name == '⚔️');
+          //let reactions = message.reactions.cache.find(emoji => emoji.emoji.name == '*');
+          message.reactions.cache.map(async (reaction) => {
+            let reactedUser = await reaction.users.fetch();
+              reactedUser.map((user) => {
+                console.log("Users reacting to " + message.content + "\n" + user.username + "#" + user.discriminator + "\nTotal Players: " + reactedUser.size + "\n");
+              });
+            console.log(reaction.count);
+          });
+        });
+        resolve(null);
+      });
+    });
+  });
+}
+
+function downtime(message) {
+  /**
+   * Wish to add a function to run routines done when applying weekly downtime.
+   * 1) Check if there are any additional posts in #roster that need to be sorted out.
+   * 2) Check if anyone has left the server in the last week with the command:
+   *      from: Dyno in: general-lounge 'absorbed'
+   * 3) Work out which quests are awaiting guildmates.
+   * 4) Send a message to #announcements with the following format:
+   *      @Blades the weekly downtime has been applied.  As a reminder you can only spend downtime or shop if
+   *      you are not in a quest or if your quest has not left the guild hall.
+   *      Please ask @Knights or @Squires for spending downtime, a document of suggested activities can be 
+   *      found in gameplay-reference.
+   *
+   *      Quests Waiting For Guildmates:
+   *      Tier 1: Impregnable Fortress
+  **/
+  // Step 1 - check for additional posts in #roster - spin this off into a Promise
+  rosterCheck(message);
+  // Step 2 - check if anyone has left the server in the last week with the command
+  // Step 3 - Work out which quests are awaiting guildmates.
+  questCheck(message);
+  return;
+}
+
 client.on("messageCreate", function(message) {
   if (message.author.bot) return;
   if (!message.content.startsWith(prefix)) return;
@@ -132,8 +191,8 @@ client.on("messageCreate", function(message) {
     case 'categories':
       categoryList(message);
       break;
-    case 'lastpost':
-      //channelData(message);
+    case 'downtime':
+      downtime(message);
       break;
     case 'ping':
       ping(message);
@@ -143,5 +202,5 @@ client.on("messageCreate", function(message) {
   }
 });
 
-//client.login(config.BOT_TOKEN);
-client.login(process.env.GRIFLET_TOKEN);
+client.login(config.BOT_TOKEN);
+//client.login(process.env.GRIFLET_TOKEN);

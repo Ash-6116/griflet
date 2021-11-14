@@ -1,0 +1,11 @@
+Used functions:
+categoryList(message)
+|- childList(category) - could be replaced with a nested loop in categoryList?
+|- messageLast(map, message)
+   |- messageFetch()
+   |- resolveDate - needs fixing to DD MMM YYYY format
+channelData(message) ?? (lastpost) - non-functional
+  does it even serve a purpose now that categoryList works??
+    could be repurposed to show all channels' last posts, utilising some of the routines used for categoryList
+    or become a 'verbose' mode of categoryList
+ping(message)
