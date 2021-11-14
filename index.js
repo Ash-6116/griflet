@@ -44,9 +44,9 @@ function mirror(textString, message) {
   //  message.reply(chunk, message); // sends chunks as a reply to existing message
   //  //message.channel.send(textString); // sends output as unique message
   //});
-  for (int i=0; i<chunkedOutput.length; i++) {
-    message.reply(chunkedOutput[i], message);
-  }
+  //for (int i=0; i<chunkedOutput.length; i++) {
+  //  message.reply(chunkedOutput[i], message);
+  //}
   return;
 }
 
