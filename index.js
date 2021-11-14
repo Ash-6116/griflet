@@ -202,5 +202,5 @@ client.on("messageCreate", function(message) {
   }
 });
 
-client.login(config.BOT_TOKEN);
-//client.login(process.env.GRIFLET_TOKEN);
+//client.login(config.BOT_TOKEN);
+client.login(process.env.GRIFLET_TOKEN);
