@@ -39,9 +39,9 @@ function mirror(textString, message) {
   // Echoes strings to both a reply on Discord and the console log one after the other.
   console.log(textString);
   const allowedLength = 1750;
-  let chunkedOutput = outputString.match(/[\s\S]{1,allowedLength}/g); // Splits output into character chunks equal to allowedLength in size or smaller
+  let chunkedOutput = textString.match(/[\s\S]{1,allowedLength}/g); // Splits output into character chunks equal to allowedLength in size or smaller
   chunkedOutput.forEach(chunk => {
-    message.reply(textString, message); // sends chunks as a reply to existing message
+    message.reply(chunk, message); // sends chunks as a reply to existing message
     //message.channel.send(textString); // sends output as unique message
   });
   return;
