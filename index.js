@@ -38,15 +38,13 @@ function resolveDate(Timestamp) {
 function mirror(textString, message) {
   // Echoes strings to both a reply on Discord and the console log one after the other.
   console.log(textString);
-  const allowedLength = 1750;
-  let chunkedOutput = textString.match(/[\s\S]{1,allowedLength}/g); // Splits output into character chunks equal to allowedLength in size or smaller
-  //chunkedOutput.forEach(chunk => {
-  //  message.reply(chunk, message); // sends chunks as a reply to existing message
-  //  //message.channel.send(textString); // sends output as unique message
-  //});
-  //for (int i=0; i<chunkedOutput.length; i++) {
-  //  message.reply(chunkedOutput[i], message);
-  //}
+  let chunkedOutput = textString.match(/[\s\S]{1,1750}/g); // Splits output into character chunks equal to 1750 in size or smaller.
+  chunkedOutput.forEach(chunk => {
+    message.reply(chunk, message); // sends chunks as a reply to existing message
+    //message.channel.send(textString); // sends output as unique message
+  });
+  console.log(chunkedOutput);
+  console.log(typeof allowedLength);
   return;
 }
 
