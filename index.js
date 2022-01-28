@@ -72,7 +72,7 @@ client.on("messageCreate", function(message) {
       ping(message);
       break;
    case 'griflet':
-      output.help();
+      output.mirror(output.help(), message);
       break;
     default:
       break;

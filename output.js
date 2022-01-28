@@ -25,11 +25,13 @@ function arrayMirror(array, message) {
 }
 
 function help() {
-  console.log("Griflet commands:");
-  console.log("!categories\n\tList out the last message times and authors.");
-  console.log("!downtime\n\tRun the Downtime routine for Castle In The Mist Discord server.");
-  console.log("!ping\n\tRun the ping command.");
-  return;
+  // need to replace this with a read from text file in time
+  let outputString = "";
+  outputString += "Griflet commands:";
+  outputString += "!categories\n\tList out the last message times and authors.";
+  outputString += "!downtime\n\tRun the Downtime routine for Castle In The Mist Discord server.";
+  outputString += "!ping\n\tRun the ping command.";
+  return outputString;
 }
 
 module.exports = {help, mirror, arrayMirror}
