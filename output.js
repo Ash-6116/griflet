@@ -27,10 +27,10 @@ function arrayMirror(array, message) {
 function help() {
   // need to replace this with a read from text file in time
   let outputString = "";
-  outputString += "Griflet commands:";
-  outputString += "!categories\n\tList out the last message times and authors.";
-  outputString += "!downtime\n\tRun the Downtime routine for Castle In The Mist Discord server.";
-  outputString += "!ping\n\tRun the ping command.";
+  outputString += "Griflet commands:\n";
+  outputString += "!categories\n\tList out the last message times and authors.\n";
+  outputString += "!downtime\n\tRun the Downtime routine for Castle In The Mist Discord server.\n";
+  outputString += "!ping\n\tRun the ping command.\n";
   return outputString;
 }
 
