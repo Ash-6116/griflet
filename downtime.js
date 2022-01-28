@@ -1,18 +1,5 @@
-const Discord = require("discord.js");
-//const config = require("./config.json"); // COMMENT OUT IN RELEASE BUILDS!!!
-const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
-const prefix = "!";
-
 // Importing own modules here
-const categories = require("./categories.js");
-const downtime = require("./downtime.js");
-const output = require("./output.js");
-
-function ping(message) {
-  const timeTaken = Date.now() - message.createdTimestamp;
-  mirror(`Pong! This message has a latency of ${timeTaken}ms.`, message);
-  return;
-}
+const output = require("./output.js"); // Gives access to HELP, MIRROR, and ARRAYMIRROR functions
 
 function rosterCheck(message) {
   return new Promise((resolve, reject) => {
@@ -53,31 +40,29 @@ function questCheck(message) {
   });
 }
 
-client.on("messageCreate", function(message) {
-  if (message.author.bot) return;
-  if (!message.content.startsWith(prefix)) return;
+function downtime(message) {
+  /**
+   * Wish to add a function to run routines done when applying weekly downtime.
+   * 1) Check if there are any additional posts in #roster that need to be sorted out.
+   * 2) Check if anyone has left the server in the last week with the command:
+   *      from: Dyno in: general-lounge 'absorbed'
+   * 3) Work out which quests are awaiting guildmates.
+   * 4) Send a message to #announcements with the following format:
+   *      @Blades the weekly downtime has been applied.  As a reminder you can only spend downtime or shop if
+   *      you are not in a quest or if your quest has not left the guild hall.
+   *      Please ask @Knights or @Squires for spending downtime, a document of suggested activities can be 
+   *      found in gameplay-reference.
+   *
+   *      Quests Waiting For Guildmates:
+   *      Tier 1: Impregnable Fortress
+  **/
+  // Step 1 - check for additional posts in #roster - spin this off into a Promise
+  //rosterCheck(message);
+  // Step 2 - check if anyone has left the server in the last week with the command
+  // Step 3 - Work out which quests are awaiting guildmates.
+  //questCheck(message);
+  console.log("This module is still in development.");
+  return;
+}
 
-  const commandBody = message.content.slice(prefix.length);
-  const args = commandBody.split(' ');
-  const command = args.shift().toLowerCase();
-
-  switch (command) {
-    case 'categories':
-      categories.categoryList(message);
-      break;
-    case 'downtime':
-      downtime.downtime(message);
-      break;
-    case 'ping':
-      ping(message);
-      break;
-   case 'griflet':
-      output.help();
-      break;
-    default:
-      break;
-  }
-});
-
-//client.login(config.BOT_TOKEN); // COMMENT OUT IN RELEASE BUILDS
-client.login(process.env.GRIFLET_TOKEN); // COMMENT OUT IN DEV BUILDS
+module.exports = {downtime};
