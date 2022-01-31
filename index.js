@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-//const config = require("./config.json"); // COMMENT OUT IN RELEASE BUILDS!!!
+const config = require("./config.json"); // COMMENT OUT IN RELEASE BUILDS!!!
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 const prefix = "!";
 
@@ -12,45 +12,6 @@ function ping(message) {
   const timeTaken = Date.now() - message.createdTimestamp;
   mirror(`Pong! This message has a latency of ${timeTaken}ms.`, message);
   return;
-}
-
-function rosterCheck(message) {
-  return new Promise((resolve, reject) => {
-    message.guild.channels.cache.filter(channel => channel.name === 'roster').forEach(channel => {
-      channel.messages.fetch({ limit: 100 }).then(messages => {
-        console.log(`Received ${messages.size} messages from #roster`);
-        if (messages.size > 2) {
-          console.log(`There are new sheets to be checked.`);
-          resolve(messages.size);
-        } else {
-          console.log(`There are no sheets to be checked.`);
-          resolve(null);
-        }
-      });
-    });
-  });
-}
-
-function questCheck(message) {
-  return new Promise((resolve, reject) => {
-    message.guild.channels.cache.filter(channel => channel.name === 'quest-board').forEach(channel => {
-      channel.messages.fetch({ limit: 100 }).then(messages => {
-        console.log(`There are currently ${messages.size} quests on the board\n`);
-        messages.forEach(message => {
-          //let reactions = message.reactions.cache.find(emoji => emoji.emoji.name == '⚔️');
-          //let reactions = message.reactions.cache.find(emoji => emoji.emoji.name == '*');
-          message.reactions.cache.map(async (reaction) => {
-            let reactedUser = await reaction.users.fetch();
-              reactedUser.map((user) => {
-                console.log("Users reacting to " + message.content + "\n" + user.username + "#" + user.discriminator + "\nTotal Players: " + reactedUser.size + "\n");
-              });
-            console.log(reaction.count);
-          });
-        });
-        resolve(null);
-      });
-    });
-  });
 }
 
 client.on("messageCreate", function(message) {
@@ -79,5 +40,5 @@ client.on("messageCreate", function(message) {
   }
 });
 
-//client.login(config.BOT_TOKEN); // COMMENT OUT IN RELEASE BUILDS
-client.login(process.env.GRIFLET_TOKEN); // COMMENT OUT IN DEV BUILDS
+client.login(config.BOT_TOKEN); // COMMENT OUT IN RELEASE BUILDS
+//client.login(process.env.GRIFLET_TOKEN); // COMMENT OUT IN DEV BUILDS

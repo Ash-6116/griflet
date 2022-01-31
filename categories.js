@@ -9,7 +9,7 @@ const output = require("./output.js");
  * 5) Repeat steps 3/4 until you get through all categories.
 **/
 
-function channelData(message) {
+function channelData(message) { // is this even used?
   // Need to filter any channel that has type 'GUILD_VOICE' or 'GUILD_CATEGORY' out, leaving only
   // 'GUILD_TEXT' behind.
   console.log('Text Channels on Server: ');
@@ -41,7 +41,6 @@ function messageFetch(channel) { // problem with deleted messages lives here
 
 async function messageLast(map, returnMessage){
   const listKeys = Array.from( map.keys() );
-  let outputString = "Report For Categories Containing Text Channels:\n"; // Replace with array to allow for easier splitting?
   const outputArray = [];
   outputArray.push("Report For Categories Containing Text Channels:\n");
   for (let index = 0; index < map.size; index++) {
@@ -79,7 +78,7 @@ function childList(category) {
   return listChannels;
 }
 
-function categoryList(message) {
+function categoryList(message) { // main function
   const map = new Map();
   // A list of each CATEGORY
   const categoryChannels = message.guild.channels.cache.filter(channel => channel.type === 'GUILD_CATEGORY');
