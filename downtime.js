@@ -18,7 +18,7 @@ function rosterSheets(message) {
   return new Promise((resolve, reject) => {
     message.guild.channels.cache.filter(channel => channel.name === 'roster').forEach(channel => {
       channel.messages.fetch({ limit: 100 }).then(messages => {
-        const allowedNumberOfPosts = 1; // set to 2 for release, 1 or 0 for debugging
+        const allowedNumberOfPosts = 2; // set to 2 for release, 1 or 0 for debugging
         if (messages.size > allowedNumberOfPosts) {
           const listMessages = Array.from( messages.keys() );
           const newSheetPosters = [];
@@ -219,10 +219,10 @@ async function returnPinnedCaravan(caravan) {
   return caravanPin;
 }
 
-function prepareOutputReactedQuests(questsReacted) {
+async function prepareOutputReactedQuests(questsReacted) {
   let outputString = "";
   outputString += "Quests With Reactions:\n";
-  questsReacted.forEach(quest => {
+  questsReacted.forEach(quest => { // TODO - rewrite as for loop and return as a promise
     let name = quest[0].split("***").join(" - ");
     outputString += name + "\n";
     quest[1].forEach(emoji => {
@@ -235,12 +235,16 @@ function prepareOutputReactedQuests(questsReacted) {
 
 function prepareOutputRunningCaravans(runningCaravans) {
   let outputString = "";
+  let emptyCaravans = "";
   outputString += "Running Caravans:\n";
   runningCaravans.forEach(caravan => {
     if (caravan[1] != null) {
      outputString += caravan[0] + ": " + caravan[1].split("***").join(" - ") + "\n"; 
+    } else {
+      secondaryString += caravan[0];
     }
   });
+  outputString += "Empty Caravans:\n" + secondaryString + "\n";
   return outputString;
 }
 
@@ -252,8 +256,9 @@ async function questCheck(message) {
     errorCheckReactions(quest, runningCaravans); // uncomment for release
   });
   outputString += prepareOutputRunningCaravans(runningCaravans);
-  outputString += prepareOutputReactedQuests(questsReacted);
-  output.mirror(outputString, message);
+  outputString += await prepareOutputReactedQuests(questsReacted);
+  //output.mirror(outputString, message);
+  console.log(outputString);
   return;
 }
 
