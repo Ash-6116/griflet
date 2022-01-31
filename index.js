@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const config = require("./config.json"); // COMMENT OUT IN RELEASE BUILDS!!!
+//const config = require("./config.json"); // COMMENT OUT IN RELEASE BUILDS!!!
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 const prefix = "!";
 
@@ -40,5 +40,5 @@ client.on("messageCreate", function(message) {
   }
 });
 
-client.login(config.BOT_TOKEN); // COMMENT OUT IN RELEASE BUILDS
-//client.login(process.env.GRIFLET_TOKEN); // COMMENT OUT IN DEV BUILDS
+//client.login(config.BOT_TOKEN); // COMMENT OUT IN RELEASE BUILDS
+client.login(process.env.GRIFLET_TOKEN); // COMMENT OUT IN DEV BUILDS
