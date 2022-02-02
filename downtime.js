@@ -84,19 +84,27 @@ async function pinnedCaravans(cache) {
   }
 }
 
-function councilAlert(questsReacted, runningCaravans, council) {
+async function councilAlert(questsReacted, runningCaravans, council) {
   let report = "";
   let emptyCaravans = "";
   let filledCaravans = "";
   let reactedQuests = "";
   let sortedCaravans = runningCaravans.sort(); // reorders the caravans in name order
-  questsReacted.forEach(quest => {
-    if (quest.length != 0) {
-      quest.forEach(reaction => {
-        reactedQuests += questTitle(reaction.message.content).split("***").join(" - ") + reaction._emoji.name + "  x" + reaction.count + "\n";
-      });
+  for(let x = 0; x < questsReacted.length; x++) {
+    if (questsReacted[x].length != 0) {
+      reactedQuests += questTitle(questsReacted[x][0].message.content).split("***").join(" - ") + "\n";
+      let reactionList = Array.from( questsReacted[x].keys() );
+      for(let y = 0; y < questsReacted[x].length; y++) {
+        const reaction = questsReacted[x][y];
+        reactedQuests += reaction._emoji.name + "  x" + reaction.count + ": ";
+        const users = await reaction.users.fetch();
+        users.forEach(user => {
+          reactedQuests += user.username + "#" + user.discriminator + "  ";
+        });
+        reactedQuests += "\n";
+      }
     }
-  });
+  }
   sortedCaravans.forEach(caravan => {
     if (caravan[1] == null) {
       emptyCaravans += caravan[0] + "\n";
@@ -104,8 +112,7 @@ function councilAlert(questsReacted, runningCaravans, council) {
       filledCaravans += caravan[0] + "  " + caravan[1].split("***").join(" - ") + "\n";
     }
   });
-  report += "Reacted Quests:\n" + reactedQuests + "\n\nFilled Caravans:\n" + filledCaravans + "\n\nEmpty Caravans:\n" + emptyCaravans;
-  console.log(report);
+  report += "Reacted Quests:\n" + reactedQuests + "\nFilled Caravans:\n" + filledCaravans + "\nEmpty Caravans:\n" + emptyCaravans;
   output.specificMirror(report, council);
   return;
 }
