@@ -1,5 +1,4 @@
 const Discord = require("discord.js");
-//const config = require("./config.json"); // COMMENT OUT IN RELEASE BUILDS!!!
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 const prefix = "!";
 
@@ -27,7 +26,7 @@ client.on("messageCreate", function(message) {
       categories.categoryList(message);
       break;
     case 'downtime':
-      downtime.downtime(message);
+      downtime.downtime(message, args);
       break;
     case 'ping':
       ping(message);
@@ -40,5 +39,4 @@ client.on("messageCreate", function(message) {
   }
 });
 
-//client.login(config.BOT_TOKEN); // COMMENT OUT IN RELEASE BUILDS
 client.login(process.env.GRIFLET_TOKEN); // COMMENT OUT IN DEV BUILDS
