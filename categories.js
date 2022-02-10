@@ -64,6 +64,10 @@ async function messageLast(map) {
       }
     }
     if (newestMessageDate != undefined && newestMessage != undefined && newestChannel != undefined) {
+<<<<<<< HEAD
+=======
+      // outputString += "Last Message for category: " + listKeys[index] + "\n\tWritten by: " + newestMessage.author.username + "#" + newestMessage.author.discriminator + "\n\t\ton: " + resolveDate(newestMessageDate) + "\n\t\tin: " + newestChannel + "\n";
+>>>>>>> ff89faecb3ba0d5500dbe8dd9c89647ae62c4307
       outputArray.push("Last Message for category: " + listKeys[index] + "\n\tWritten by: " + newestMessage.author.username + "#" + newestMessage.author.discriminator + "\n\t\ton: " + resolveDate(newestMessageDate) + "\n\t\tin: " + newestChannel + "\n");
     }
   }
