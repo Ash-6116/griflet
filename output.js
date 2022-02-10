@@ -1,7 +1,8 @@
+const allowedLimit = 1650; // must always be at least 125 less than 2000 (1875 max)
+
 function mirror(textString, message) {
   // Echoes strings to both a reply on Discord and the console log one after the other.
-  //let chunkedOutput = textString.match(/[\s\S]{1,1750}/g); // Splits output into character chunks equal to 1750 in size or smaller. // NEED TO REPLACE THIS WITH A METHOD THAT SPLITS ON NEWLINE CLOSEST TO 1750
-  let chunkedOutput = chunkOutput(textString);
+  let chunkedOutput = textString.match(/[\s\S]{1,1750}/g); // Splits output into character chunks equal to 1750 in size or smaller. // NEED TO REPLACE THIS WITH A METHOD THAT SPLITS ON NEWLINE CLOSEST TO 1750
   chunkedOutput.forEach(chunk => {
     message.reply(chunk, message); // sends chunks as a reply to existing message // commented out during debug only
     //message.channel.send(textString); // sends output as unique message
@@ -11,7 +12,7 @@ function mirror(textString, message) {
 }
 
 function chunkOutput(textString) {
-  return textString.match(/[\s\S]{1,1750}/g);
+  return textString.match(/[\s\S]{1,1775}/g); // cannot be passed a variable number
 }
 
 function specificMirror(textString, channels) {
@@ -28,7 +29,7 @@ function specificMirror(textString, channels) {
 function arrayMirror(array, message) {
   let outputString = "";
   array.forEach(element => {
-    if (outputString.length > 1650) {
+    if (outputString.length > allowedLimit) {
       mirror(outputString, message);
       outputString = "";
     }

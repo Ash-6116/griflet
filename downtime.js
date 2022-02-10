@@ -1,19 +1,34 @@
 // Importing own modules here
 const output = require("./output.js"); // Gives access to HELP, MIRROR, and ARRAYMIRROR functions
 
+/**
+// redundant!!!
+function userName(user) {
+  return user.username + "#" + user.discriminator;
+}
+**/
+
 function roster(rosterChannel) {
-  //console.log(rosterChannel);
   return new Promise((resolve, reject) => {
     rosterChannel.forEach(channel => {
       channel.messages.fetch({limit: 100}).then(messages => {
-        //console.log(messages);
-        const allowedNumberOfPosts = 0; // set to 2 for release, 1 or 0 for debugging
+        const allowedNumberOfPosts = 2; // set to 2 for release, 1 or 0 for debugging
         if (messages.size > allowedNumberOfPosts) {
-          const newSheetPosters = [];
+          const newSheetPosters = [], reactedSheetPosters = [];
+          // need to check for reactions!!  If there is a reaction, it is in the process of being checked
           messages.forEach(message => {
-            newSheetPosters.push(message.author.username + "#" + message.author.discriminator);
+            const reactionsArray = [];
+            message.reactions.cache.map(async (reaction) => {
+              reactionsArray.push(reaction); // collecting reactions
+            });
+            //const poster = message.author.username + "#" + message.author.discriminator;
+            if (reactionsArray.length > 0) {
+              reactedSheetPosters.push(message.author.tag, true);
+            } else {
+              newSheetPosters.push(message.author.tag, false);
+            }
           });
-          resolve(newSheetPosters);
+          resolve([newSheetPosters, reactedSheetPosters]);
         } else {
           resolve(null);
         }
@@ -34,7 +49,7 @@ function questTitle(quest) {
     tier = titleArray[2];
   }
   // the *** provides a separator which can be used later
-  return tier.split("*").join("") + "***" + title.split("*").join("");
+  return tier.split("*").join("") + " - " + title.split("*").join("");
 }
 
 function reactedQuests(questBoards) {
@@ -62,14 +77,11 @@ async function pinnedCaravans(cache) {
   const categoryList = Array.from( cache.keys() );
   for(let index = 0; index < cache.size; index++) {
     let children = cache.get(categoryList[index]).children;
-    const channels = [];
-    //console.log(children);
-    const childList = Array.from( children.keys() );
+    const channels = [], childList = Array.from( children.keys() );
     for(let c = 0; c < children.size; c++) {
       let child = children.get(childList[c]);
       if (child.name.split("-")[0] == "quest") {
-        const pinned = await child.messages.fetchPinned();
-        const pins = [];
+        const pinned = await child.messages.fetchPinned(), pins = [];
         if (pinned.size == 0) {
           pins.push(child.name, null);
         } else {
@@ -84,60 +96,214 @@ async function pinnedCaravans(cache) {
   }
 }
 
-async function councilAlert(questsReacted, runningCaravans, council) {
-  let report = "";
-  let emptyCaravans = "";
-  let filledCaravans = "";
-  let reactedQuests = "";
-  let sortedCaravans = runningCaravans.sort(); // reorders the caravans in name order
-  for(let x = 0; x < questsReacted.length; x++) {
-    if (questsReacted[x].length != 0) {
-      reactedQuests += questTitle(questsReacted[x][0].message.content).split("***").join(" - ") + "\n";
-      let reactionList = Array.from( questsReacted[x].keys() );
-      for(let y = 0; y < questsReacted[x].length; y++) {
-        const reaction = questsReacted[x][y];
-        reactedQuests += reaction._emoji.name + "  x" + reaction.count + ": ";
-        const users = await reaction.users.fetch();
-        users.forEach(user => {
-          reactedQuests += user.username + "#" + user.discriminator + "  ";
-        });
-        reactedQuests += "\n";
+function newCouncilAlert(alerts, council) {
+  /**
+   * alerts will come in as an Array of arrays with the following sequence:
+   * 1. general alerts for the council
+   * 2. the reactions list
+   * 3. the caravans lists
+   * 4. quests waiting for blades
+   * 5. quests waiting for vassals
+   * 6. the roster list
+  **/
+  const rosters = alerts.pop(), vassalsWaiting = alerts.pop(), bladesWaiting = alerts.pop(), emptyCaravans = alerts.pop(), runningCaravans = alerts.pop(), reactions = alerts.pop(); // separating the output back out
+  let outputString = "";
+  if (rosters != null) {
+    outputString += "Rosters to be checked:\n";
+    rosters.forEach(roster => {
+      if (roster[1] == true ) {
+        outputString += roster[0] + ", this sheet is currently being checked.\n";
+      } else {
+        outputString += roster[0] + ", this sheet is currently not being checked.\n";
       }
-    }
+    });
+    outputString += "\n";
   }
-  sortedCaravans.forEach(caravan => {
-    if (caravan[1] == null) {
-      emptyCaravans += caravan[0] + "\n";
-    } else {
-      filledCaravans += caravan[0] + "  " + caravan[1].split("***").join(" - ") + "\n";
-    }
-  });
-  report += "Reacted Quests:\n" + reactedQuests + "\nFilled Caravans:\n" + filledCaravans + "\nEmpty Caravans:\n" + emptyCaravans;
-  output.specificMirror(report, council);
+  if (vassalsWaiting.length != 0) {
+    outputString += "The following quests are waiting for vassals to volunteer to run them:\n";
+    vassalsWaiting.forEach(quest => {
+      outputString += quest;
+    });
+    outputString += "\n";
+  }
+  if (bladesWaiting.length != 0) {
+    outputString += "The following quests are waiting for Blades to sign up before starting:\n";
+    bladesWaiting.forEach(quest => {
+      outputString += quest;
+    });
+    outputString += "\n";
+  }
+  if (reactions != 0) {
+    outputString += "Reacted Quests:\n";
+    reactions.forEach(reaction => {
+      outputString += reaction[0] + "\n"; // reaction[0] = title
+      reaction.shift();
+      reaction.forEach(users => {
+        const emoji = users.pop();
+        outputString += emoji + " x" + users.length + ": ";
+        users.forEach(user => {
+          outputString += user.tag + ", ";
+        });
+        outputString = outputString.slice(0, (outputString.length-2)) + "\n";
+      });
+    });
+    outputString += "\n";
+  }
+  if (runningCaravans.length != 0) {
+    outputString += "Filled Caravans:\n";
+    runningCaravans.forEach(caravan => {
+      outputString += caravan[0] + "\n";
+      caravan[1].forEach(user => {
+        outputString += user.tag + ", "; // currently missing Arrows!!!
+      });
+      outputString = outputString.slice(0, (outputString.length-2)) + "\n";
+    });
+    outputString += "\n";
+  }
+  if (emptyCaravans.length != 0) {
+    outputString += "Empty Caravans:\n";
+    emptyCaravans.forEach(caravan => {
+      outputString += caravan + "\n";
+    });
+    outputString += "\n";
+  }
+  if (alerts.length != 0) {
+    outputString += "Alerts for Council:\n";
+    alerts.forEach(alert => {
+      outputString += alert + "\n";
+    });
+  }
+  //console.log(outputString);
+  output.specificMirror(outputString, council);
   return;
 }
 
-async function questCheck(cache, council) {
+function isQuestRunning(title, runningCaravans) {
+  let output = null;
+  runningCaravans.forEach(caravan => {
+    if (caravan.includes(title)) {
+      output = caravan;
+    }
+  });
+  return output;
+}
+
+function resolveReactions(reaction) {
+  return new Promise((resolve, reject) => {
+    const userArray = [];
+    reaction.users.fetch().then((users) => {
+      users.forEach(user => {
+        userArray.push(user);
+      });
+    }).finally(() => {
+      userArray.push(reaction._emoji.name);
+      resolve(userArray);
+    });
+  });
+}
+
+async function errorCheckQuests(questsReacted, runningCaravans, guild) {
+  console.log(runningCaravans);
+  const questsForGuildmates = [], questsForVassals = [], alertsForCouncil = [], caravanOutput = [], reactionOutput = [], emptyCaravans = []; // using reactionOutput to convert questsReacted for council output
+  for(let index = 0; index < questsReacted.length; index ++) { // iterating over the quests with reactions
+    let quest = questsReacted[index];
+    if (quest.length != 0) {  // filtering out quests with no reactions, just in case
+      const title = questTitle(quest[0].message.content);
+      const questArray = [title];
+      for (let index = 0; index < quest.length; index++) {
+        const users = await resolveReactions(quest[index]);
+        questArray.push(users);
+      }
+      reactionOutput.push(questArray);
+      if ((questArray.length == 2 && questArray[1].slice(-1)[0] == "⚔️")||(questArray.length == 3 && questArray[1].slice(-1)[0] == "⚔️" && questArray[2].slice(-1)[0] == "🏹")) {  // looking at quests that have only 1 reaction emoji or have 2 reactions with the 2nd being bow and arrow and the 1st is a crossed swords
+        const caravan = isQuestRunning(title, runningCaravans);
+        if (caravan != null) { // quest is running
+          // Blades roles ALWAYS follow the format qc- and a number
+          const caravanRole = guild.roles.cache.find(role => role.name === "QC-"+caravan[0].split("-")[2]).id; // returns the id value of the quest caravan role
+          let blades = questArray[1].slice(0,-1);
+          if (questArray.length == 3) {
+            blades = blades.concat(questArray[2].slice(0,-1)); // TODO - may not be adding Arrows, needs checking
+          }
+          let currentBlades = 0;
+          for (let m = 0; m < blades.length; m++) {
+            try {
+              const member = await guild.members.fetch(blades[m].id);
+              if (member._roles.includes(caravanRole)) {
+                currentBlades++; // the member has the role for the caravan
+              } else {
+                alertsForCouncil.push(blades[m].tag + " does not have their role for " + caravan[0]);
+              }
+            } catch (e) {
+              console.log(e);
+              console.log(blades[m].tag);
+              console.log("Quest: " + title);
+            }
+          }
+          if (blades.length == currentBlades) {
+            // this caravan is properly filled
+            console.log(title + " is running in " + caravan[0]);
+            caravanOutput.push([caravan[0] + ": " + title, blades]);
+          } else {
+            alertsForCouncil.push("There's fewer Blades in the caravan than reacted to the quest. " + title + " " + caravan[0]);
+            // TODO - need to sort out what should happen here!!!
+          }
+        } else { // quest is not running
+          if (questArray.length == 2 && questArray[1].slice(-1)[0] == "⚔️") {
+            switch (true) {
+              case (questArray[1].length-1 == 4): // exactly four crossed swords on a quest not running - 1 for debug.
+                console.log("Need to alert the VASSALS: " + title);
+                questsForVassals.push([title, questArray[1].slice(0,-1)]);
+                break;
+              case (questArray[1].length-1 < 4): // less than 4 crossed swords - valid reaction
+                console.log("Need to alert the BLADES: " + title);
+                questsForGuildmates.push(title);
+                break;
+              case (questArray[1].length-1 > 4): // more than 4 crossed swords on a quest not running
+                console.log("Need to alert the COUNCIL: " + title);
+                alertsForCouncil.push("Too many reactions to " + title); // TO DO - add users to alert?
+                break;
+            }
+          } else {  // too many reaction emojis!!!
+            alertsForCouncil.push("This quest has multiple reaction emojis. " + title);
+          }
+        }
+      } else {
+        alertsForCouncil.push("Invalid reaction!!! " + title);
+      }
+    }
+  }
+  runningCaravans.forEach(caravan => {
+    if (caravan[1] == null) {
+      console.log("Need to send this to the council!!! " + caravan[0]);
+      emptyCaravans.push(caravan[0]);
+    }
+  });
+  alertsForCouncil.push(reactionOutput, caravanOutput, emptyCaravans);
+  return [questsForGuildmates, alertsForCouncil, questsForVassals];
+}
+
+async function questCheck(guild, council) {
+  let cache = guild.channels.cache
   // Work out which quests are awaiting guild mates
   // NEED - Quests with reactions
   // NEED - Running Quests
   let outputString = "";
   const questsReacted = await reactedQuests(cache.filter(channel => channel.name === 'quest-board'));
   const runningCaravans = await pinnedCaravans(cache.filter(channel => channel.type === 'GUILD_CATEGORY' && channel.name === 'Quest Caravans'));
-  //console.log(questsReacted);
-  //console.log(runningCaravans);
-  councilAlert(questsReacted, runningCaravans, council);
-  // is coming through as [[],...] where empty results in the nestedArray mean no reactions
-  return outputString;
+  const checkedQuests = await errorCheckQuests(questsReacted, runningCaravans, guild);
+  /**
+   *  checkedQuests[0] == questsForGuildmates
+   *  checkedQuests[1] == alertsForCouncil
+   *  checkedQuests[2] == questsForVassals
+  **/
+  return checkedQuests;
 }
 
 function buildRoleList(cache) {
   let usableRoles = [];
   cache.forEach(role => {
     if (role.name == "Blades" || role.name == "Knights" || role.name == "Squires" || role.name == "Vassals") {
-      let usableRole = [];
-      usableRole.push(role.id, role.name);
-      usableRoles.push(usableRole);
+      usableRoles.push([role.id, role.name]);
     }
   });
   return usableRoles;
@@ -157,23 +323,84 @@ function buildChannelList(cache) {
   let usableChannels = [];
   cache.forEach(channel => {
     if (channel.name == "gameplay-reference" || channel.name == "announcements" || channel.name == "briefing-room" || channel.name == "bot-stuff") {
-      let usableChannel = [];
-      usableChannel.push(channel.id, channel.name);
-      usableChannels.push(usableChannel);
+      usableChannels.push([channel.id, channel.name]);
     }
   });
   return usableChannels;
 }
 
-function announce(roles, usableChannels, args, announcementChannel) {
+function sortQuests(questArray) {
+  // Blades arrays have 4 tiers
+  const tier1 = [], tier2 = [], tier3 = [], tier4 = [];
+  questArray.forEach(quest => {
+    const splitQuestObject = quest.split(" - "), title = splitQuestObject[1]; // splits the string
+    switch (splitQuestObject[0].replace(/[^0-9]/g, '')) { // strips the string to just the quest tier number
+      case '1':
+        tier1.push(title);
+        break;
+      case '2':
+        tier2.push(title);
+        break;
+      case '3':
+        tier3.push(title);
+        break;
+      case '4':
+        tier4.push(title);
+        break;
+    }
+  });
+  return [tier1, tier2, tier3, tier4];
+}
+
+function vassalsAlert(questsWaitingForDM, announcementChannel, roles) {
+  if (questsWaitingForDM.length != 0) {
+    let stdAnnouncement = "<@&" + returnItemId(roles, "Vassals") + ">, the following quests have filled.\n";
+    questsWaitingForDM.forEach(questWaiting => {
+      stdAnnouncement += questWaiting[0] + ", the party will be: ";
+      let usersWaiting = "";
+      questWaiting[1].forEach(user => {
+        usersWaiting += user + ", ";
+      });
+      stdAnnouncement += usersWaiting.slice(0, (usersWaiting.length-2)) + "\n";
+    });
+    stdAnnouncement += "Is there anyone free who can volunteer to take these quests?  Many thanks.";
+    console.log(stdAnnouncement);
+    //output.specificMirror(stdAnnouncement, announcementChannel);
+  }
+  return;
+}
+
+function announce(roles, usableChannels, args, announcementChannel, questsWaitingForGuildmates) {
   // replace message with guild in the function?
-  let usableRoles = buildRoleList(roles);
-  stdAnnouncement = "<@&" + returnItemId(usableRoles, "Blades") + "> the weekly downtime has been applied.  As a reminder you can only spend downtime or shop if you are not in a quest or if your quest has not left the guild hall.\nPlease ask <@&" + returnItemId(usableRoles, "Knights") + "> or <@&" + returnItemId(usableRoles, "Squires") + "> for spending downtime, a document of suggested activities can be found in <#" + returnItemId(usableChannels, "gameplay-reference") + ">.";
+  let usableRoles = buildRoleList(roles); // move to downtime function?
+  let stdAnnouncement = "<@&" + returnItemId(usableRoles, "Blades") + "> the weekly downtime has been applied.  As a reminder you can only spend downtime or shop if you are not in a quest or if your quest has not left the guild hall.\nPlease ask <@&" + returnItemId(usableRoles, "Knights") + "> or <@&" + returnItemId(usableRoles, "Squires") + "> for spending downtime, a document of suggested activities can be found in <#" + returnItemId(usableChannels, "gameplay-reference") + ">.\n\nQuests Looking For Guildmates:\n";
+  if (questsWaitingForGuildmates.length == 0) {
+    stdAnnouncement += "None";
+  } else {
+    // Need to SORT the quests by Tier
+    const sortedQuests = sortQuests(questsWaitingForGuildmates);
+    let tierNumber = 1;
+    sortedQuests.forEach(tier => {
+      if (tier.length != 0) {
+        stdAnnouncement += "Tier " + tierNumber + ": "
+        let questsForTier = "";
+        tier.forEach(quest => {
+          questsForTier += quest + ", ";
+        });
+        stdAnnouncement += questsForTier.slice(0, (questsForTier.length-2)) + "\n";
+      }
+      tierNumber++;
+    });
+  }
   let additionalAnnouncement = "";
+  if (args.length != 0) {
+    additionalAnnouncement += "\n";
+  }
   args.forEach(arg => {
     additionalAnnouncement += arg + " ";
   });
-  //output.specificMirror(stdAnnouncement + "\n\n" + additionalAnnouncement, announcementChannel);
+  console.log(stdAnnouncement + additionalAnnouncement); // for debug
+  //output.specificMirror(stdAnnouncement + additionalAnnouncement, announcementChannel); // for release
 }
 
 async function downtime(message, args) {
@@ -193,15 +420,20 @@ async function downtime(message, args) {
    *      Quests Waiting For Guildmates:
    *      Tier 1: Impregnable Fortress
   **/
-  let questsWaitingBlades = []; // will fill this with quests awaiting guildmates
-  let councilLog = ""; // will fill this with output for the council
-  let questsWaitingVassals = []; // will fill this with quests awaiting DM
-  let usableChannels = buildChannelList(message.guild.channels.cache.filter(m => m.type === 'GUILD_TEXT'));
-  // roster will return the authors of any sheets not yet checked
+  let questsWaitingBlades = [], councilLog = "", questsWaitingVassals = [], usableChannels = buildChannelList(message.guild.channels.cache.filter(m => m.type === 'GUILD_TEXT')), usableRoles = buildRoleList(message.guild.roles.cache);
+  // roster will return the authors of any sheets not yet checked in an array [new, in progress]
   const rosterOutput = await roster(message.guild.channels.cache.filter(channel => channel.name === 'roster'));
   console.log(rosterOutput); // debug only
-  const questsChecked = questCheck(message.guild.channels.cache, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff")));
-  // announce(message.guild.roles.cache, usableChannels, args, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "announcements")));
+  const questsChecked = await questCheck(message.guild, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff"))); // returns any quests awaiting BLADES
+  console.log(questsChecked); // debug only
+  announce(message.guild.roles.cache, usableChannels, args, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "announcements")), questsChecked[0]);
+  vassalsAlert(questsChecked[2], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "briefing-room")), usableRoles);
+  // adding the output sent to vassals and blades along with the roster to the council.
+  questsChecked[1].push(questsChecked[0], questsChecked[2], rosterOutput);
+  //questsChecked[1].push(questsChecked[2]);
+  //questsChecked[1].push(rosterOutput);
+  newCouncilAlert(questsChecked[1], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff")));
+  return;
 }
 
 module.exports = {downtime}

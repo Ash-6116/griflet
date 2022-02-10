@@ -9,6 +9,7 @@ const output = require("./output.js");
  * 5) Repeat steps 3/4 until you get through all categories.
 **/
 
+/**
 function channelData(message) { // is this even used?
   // Need to filter any channel that has type 'GUILD_VOICE' or 'GUILD_CATEGORY' out, leaving only
   // 'GUILD_TEXT' behind.
@@ -20,6 +21,7 @@ function channelData(message) { // is this even used?
   })
   return;
 }
+**/
 
 function resolveDate(Timestamp) {
   let d = new Date(Timestamp);
@@ -39,7 +41,7 @@ function messageFetch(channel) { // problem with deleted messages lives here
   });
 }
 
-async function messageLast(map, returnMessage){
+async function messageLast(map) {
   const listKeys = Array.from( map.keys() );
   const outputArray = [];
   outputArray.push("Report For Categories Containing Text Channels:\n");
@@ -62,12 +64,10 @@ async function messageLast(map, returnMessage){
       }
     }
     if (newestMessageDate != undefined && newestMessage != undefined && newestChannel != undefined) {
-      outputString += "Last Message for category: " + listKeys[index] + "\n\tWritten by: " + newestMessage.author.username + "#" + newestMessage.author.discriminator + "\n\t\ton: " + resolveDate(newestMessageDate) + "\n\t\tin: " + newestChannel + "\n";
       outputArray.push("Last Message for category: " + listKeys[index] + "\n\tWritten by: " + newestMessage.author.username + "#" + newestMessage.author.discriminator + "\n\t\ton: " + resolveDate(newestMessageDate) + "\n\t\tin: " + newestChannel + "\n");
     }
   }
-  output.arrayMirror(outputArray, returnMessage);
-  return;
+  return outputArray;
 }
 
 function childList(category) {
@@ -83,9 +83,11 @@ function categoryList(message) { // main function
   // A list of each CATEGORY
   const categoryChannels = message.guild.channels.cache.filter(channel => channel.type === 'GUILD_CATEGORY');
   categoryChannels.forEach(category => {
-    map.set(category.name, childList(category));
+    map.set(category.name, childList(category)); // TODO - replace with category.children?
   });
-  messageLast(map, message);
+  messageLast(map).then((outputArray) => {
+    output.arrayMirror(outputArray, message);
+  });
   return;
 }
 
