@@ -356,8 +356,8 @@ function vassalsAlert(questsWaitingForDM, announcementChannel, roles) {
       stdAnnouncement += usersWaiting.slice(0, (usersWaiting.length-2)) + "\n";
     });
     stdAnnouncement += "Is there anyone free who can volunteer to take these quests?  Many thanks.";
-    console.log(stdAnnouncement);
-    //output.specificMirror(stdAnnouncement, announcementChannel);
+    //console.log(stdAnnouncement);
+    output.specificMirror(stdAnnouncement, announcementChannel);
   }
   return;
 }
@@ -392,7 +392,7 @@ function announce(roles, usableChannels, args, announcementChannel, questsWaitin
     additionalAnnouncement += arg + " ";
   });
   //console.log(stdAnnouncement + additionalAnnouncement); // for debug
-  //output.specificMirror(stdAnnouncement + additionalAnnouncement, announcementChannel); // for release
+  output.specificMirror(stdAnnouncement + additionalAnnouncement, announcementChannel); // for release
 }
 
 async function shared(message) {
@@ -431,7 +431,7 @@ async function downtime(message, args) {
   vassalsAlert(questsChecked[2], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "briefing-room")), usableRoles);
   // adding the output sent to vassals and blades along with the roster to the council.
   questsChecked[1].push(questsChecked[0], questsChecked[2], rosterOutput);
-  //councilAlert(questsChecked[1], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff")));
+  councilAlert(questsChecked[1], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff")));
   return;
 }
 
