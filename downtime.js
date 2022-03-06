@@ -351,7 +351,7 @@ function vassalsAlert(questsWaitingForDM, announcementChannel, roles) {
       stdAnnouncement += questWaiting[0] + ", the party will be: ";
       let usersWaiting = "";
       questWaiting[1].forEach(user => {
-        usersWaiting += user + ", ";
+        usersWaiting += user.tag + ", ";
       });
       stdAnnouncement += usersWaiting.slice(0, (usersWaiting.length-2)) + "\n";
     });
