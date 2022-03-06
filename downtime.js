@@ -1,13 +1,6 @@
 // Importing own modules here
 const output = require("./output.js"); // Gives access to HELP, MIRROR, and ARRAYMIRROR functions
 
-/**
-// redundant!!!
-function userName(user) {
-  return user.username + "#" + user.discriminator;
-}
-**/
-
 function roster(rosterChannel) {
   return new Promise((resolve, reject) => {
     rosterChannel.forEach(channel => {
@@ -21,7 +14,6 @@ function roster(rosterChannel) {
             message.reactions.cache.map(async (reaction) => {
               reactionsArray.push(reaction); // collecting reactions
             });
-            //const poster = message.author.username + "#" + message.author.discriminator;
             if (reactionsArray.length > 0) {
               reactedSheetPosters.push(message.author.tag, true);
             } else {
@@ -48,7 +40,6 @@ function questTitle(quest) {
     title = titleArray[1];
     tier = titleArray[2];
   }
-  // the *** provides a separator which can be used later
   return tier.split("*").join("") + " - " + title.split("*").join("");
 }
 
@@ -96,7 +87,7 @@ async function pinnedCaravans(cache) {
   }
 }
 
-function newCouncilAlert(alerts, council) {
+function councilAlert(alerts, council) {
   /**
    * alerts will come in as an Array of arrays with the following sequence:
    * 1. general alerts for the council
@@ -173,7 +164,6 @@ function newCouncilAlert(alerts, council) {
       outputString += alert + "\n";
     });
   }
-  //console.log(outputString);
   output.specificMirror(outputString, council);
   return;
 }
@@ -234,9 +224,11 @@ async function errorCheckQuests(questsReacted, runningCaravans, guild) {
                 alertsForCouncil.push(blades[m].tag + " does not have their role for " + caravan[0]);
               }
             } catch (e) {
+              // The user doesn't exist - may have left the server
               console.log(e);
               console.log(blades[m].tag);
               console.log("Quest: " + title);
+              alertsForCouncil.push("The following user has a reaction to a quest but cannot be found, they may have left the server.\nUser: " + blades[m].tag + "\nQuest: " + title);
             }
           }
           if (blades.length == currentBlades) {
@@ -364,8 +356,8 @@ function vassalsAlert(questsWaitingForDM, announcementChannel, roles) {
       stdAnnouncement += usersWaiting.slice(0, (usersWaiting.length-2)) + "\n";
     });
     stdAnnouncement += "Is there anyone free who can volunteer to take these quests?  Many thanks.";
-    console.log(stdAnnouncement);
-    //output.specificMirror(stdAnnouncement, announcementChannel);
+    //console.log(stdAnnouncement);
+    output.specificMirror(stdAnnouncement, announcementChannel);
   }
   return;
 }
@@ -377,7 +369,7 @@ function announce(roles, usableChannels, args, announcementChannel, questsWaitin
   if (questsWaitingForGuildmates.length == 0) {
     stdAnnouncement += "None";
   } else {
-    // Need to SORT the quests by Tier
+    // Need to SORT the quests by Tier - needs to become its own function for reuse of code!!
     const sortedQuests = sortQuests(questsWaitingForGuildmates);
     let tierNumber = 1;
     sortedQuests.forEach(tier => {
@@ -399,8 +391,16 @@ function announce(roles, usableChannels, args, announcementChannel, questsWaitin
   args.forEach(arg => {
     additionalAnnouncement += arg + " ";
   });
-  console.log(stdAnnouncement + additionalAnnouncement); // for debug
-  //output.specificMirror(stdAnnouncement + additionalAnnouncement, announcementChannel); // for release
+  //console.log(stdAnnouncement + additionalAnnouncement); // for debug
+  output.specificMirror(stdAnnouncement + additionalAnnouncement, announcementChannel); // for release
+}
+
+async function shared(message) {
+  let questsWaitingBlades = [], councilLog = "", questsWaitingVassals = [], usableChannels = buildChannelList(message.guild.channels.cache.filter(m => m.type === 'GUILD_TEXT')), usableRoles = buildRoleList(message.guild.roles.cache);
+  // roster will return the authors of any sheets not yet checked in an array [new, in progress]
+  const rosterOutput = await roster(message.guild.channels.cache.filter(channel => channel.name === 'roster'));
+  const questsChecked = await questCheck(message.guild, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff"))); // returns any quests awaiting BLADES - does it need bot-stuff as an argument?
+  return questsChecked;
 }
 
 async function downtime(message, args) {
@@ -426,13 +426,12 @@ async function downtime(message, args) {
   console.log(rosterOutput); // debug only
   const questsChecked = await questCheck(message.guild, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff"))); // returns any quests awaiting BLADES
   console.log(questsChecked); // debug only
+  // hive off questsChecked into a new routine, so it can be run DAILY for the Council as a quick check for quests that have filled?
   announce(message.guild.roles.cache, usableChannels, args, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "announcements")), questsChecked[0]);
   vassalsAlert(questsChecked[2], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "briefing-room")), usableRoles);
   // adding the output sent to vassals and blades along with the roster to the council.
   questsChecked[1].push(questsChecked[0], questsChecked[2], rosterOutput);
-  //questsChecked[1].push(questsChecked[2]);
-  //questsChecked[1].push(rosterOutput);
-  newCouncilAlert(questsChecked[1], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff")));
+  councilAlert(questsChecked[1], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff")));
   return;
 }
 
