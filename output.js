@@ -44,6 +44,7 @@ function help() {
   let outputString = "";
   outputString += "Griflet commands:\n";
   outputString += "!categories\n\tList out the last message times and authors.\n";
+  outputString += "!daily\n\tRun all of the downtime routine *__except__* for announcing to the Blades - used to create a daily log of quests filling up and reminding vassals of quests waiting for DM.\n";
   outputString += "!downtime\n\tRun the Downtime routine for Castle In The Mist Discord server.\n";
   outputString += "!ping\n\tRun the ping command.\n";
   return outputString;

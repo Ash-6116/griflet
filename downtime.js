@@ -1,6 +1,8 @@
 // Importing own modules here
 const output = require("./output.js"); // Gives access to HELP, MIRROR, and ARRAYMIRROR functions
 
+const debug = false; // used to switch between debug mode (true) and release (false)
+
 function roster(rosterChannel) {
   return new Promise((resolve, reject) => {
     rosterChannel.forEach(channel => {
@@ -97,6 +99,7 @@ function councilAlert(alerts, council) {
    * 5. quests waiting for vassals
    * 6. the roster list
   **/
+  const debugQuest = "Tier: 0 - Debug Quest";
   const rosters = alerts.pop(), vassalsWaiting = alerts.pop(), bladesWaiting = alerts.pop(), emptyCaravans = alerts.pop(), runningCaravans = alerts.pop(), reactions = alerts.pop(); // separating the output back out
   let outputString = "";
   if (rosters != null) {
@@ -111,16 +114,18 @@ function councilAlert(alerts, council) {
     outputString += "\n";
   }
   if (vassalsWaiting.length != 0) {
+    //vassalsWaiting.push(debugQuest); // debug
     outputString += "The following quests are waiting for vassals to volunteer to run them:\n";
     vassalsWaiting.forEach(quest => {
-      outputString += quest;
+      outputString += quest + "\n";
     });
     outputString += "\n";
   }
   if (bladesWaiting.length != 0) {
+    //bladesWaiting.push(debugQuest); // debug
     outputString += "The following quests are waiting for Blades to sign up before starting:\n";
     bladesWaiting.forEach(quest => {
-      outputString += quest;
+      outputString += quest + "\n";
     });
     outputString += "\n";
   }
@@ -164,7 +169,11 @@ function councilAlert(alerts, council) {
       outputString += alert + "\n";
     });
   }
-  output.specificMirror(outputString, council);
+  if (debug) {
+    console.log(outputString);
+  } else {
+    output.specificMirror(outputString, council);
+  }
   return;
 }
 
@@ -351,13 +360,16 @@ function vassalsAlert(questsWaitingForDM, announcementChannel, roles) {
       stdAnnouncement += questWaiting[0] + ", the party will be: ";
       let usersWaiting = "";
       questWaiting[1].forEach(user => {
-        usersWaiting += user.tag + ", ";
+        usersWaiting += "<@" + user.id + ">, "; // use user.tag as a fallback ;)
       });
       stdAnnouncement += usersWaiting.slice(0, (usersWaiting.length-2)) + "\n";
     });
     stdAnnouncement += "Is there anyone free who can volunteer to take these quests?  Many thanks.";
-    //console.log(stdAnnouncement);
-    output.specificMirror(stdAnnouncement, announcementChannel);
+    if (debug) {
+      console.log(stdAnnouncement);
+    } else {
+      output.specificMirror(stdAnnouncement, announcementChannel);
+    }
   }
   return;
 }
@@ -391,19 +403,14 @@ function announce(roles, usableChannels, args, announcementChannel, questsWaitin
   args.forEach(arg => {
     additionalAnnouncement += arg + " ";
   });
-  //console.log(stdAnnouncement + additionalAnnouncement); // for debug
-  output.specificMirror(stdAnnouncement + additionalAnnouncement, announcementChannel); // for release
+  if (debug) {
+    console.log(stdAnnouncement + additionalAnnouncement);
+  } else {
+    output.specificMirror(stdAnnouncement + additionalAnnouncement, announcementChannel);
+  }
 }
 
-async function shared(message) {
-  let questsWaitingBlades = [], councilLog = "", questsWaitingVassals = [], usableChannels = buildChannelList(message.guild.channels.cache.filter(m => m.type === 'GUILD_TEXT')), usableRoles = buildRoleList(message.guild.roles.cache);
-  // roster will return the authors of any sheets not yet checked in an array [new, in progress]
-  const rosterOutput = await roster(message.guild.channels.cache.filter(channel => channel.name === 'roster'));
-  const questsChecked = await questCheck(message.guild, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff"))); // returns any quests awaiting BLADES - does it need bot-stuff as an argument?
-  return questsChecked;
-}
-
-async function downtime(message, args) {
+async function daily(message, args) {
   // TODO - is message the appropriate item for this module?
   /**
    * Wish to add a function to run routines done when applying weekly downtime.
@@ -423,16 +430,19 @@ async function downtime(message, args) {
   let questsWaitingBlades = [], councilLog = "", questsWaitingVassals = [], usableChannels = buildChannelList(message.guild.channels.cache.filter(m => m.type === 'GUILD_TEXT')), usableRoles = buildRoleList(message.guild.roles.cache);
   // roster will return the authors of any sheets not yet checked in an array [new, in progress]
   const rosterOutput = await roster(message.guild.channels.cache.filter(channel => channel.name === 'roster'));
-  console.log(rosterOutput); // debug only
   const questsChecked = await questCheck(message.guild, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff"))); // returns any quests awaiting BLADES
-  console.log(questsChecked); // debug only
-  // hive off questsChecked into a new routine, so it can be run DAILY for the Council as a quick check for quests that have filled?
-  announce(message.guild.roles.cache, usableChannels, args, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "announcements")), questsChecked[0]);
   vassalsAlert(questsChecked[2], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "briefing-room")), usableRoles);
   // adding the output sent to vassals and blades along with the roster to the council.
   questsChecked[1].push(questsChecked[0], questsChecked[2], rosterOutput);
   councilAlert(questsChecked[1], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff")));
+  return [usableChannels, questsChecked[0]];
+}
+
+function downtime(message, args) {
+  daily(message, args).then(announcement => {
+    announce(message.guild.roles.cache, announcement[0], args, message.guild.channels.cache.filter(m => m.id === returnItemId(announcement[0], "announcements")), announcement[1]);
+  });
   return;
 }
 
-module.exports = {downtime}
+module.exports = {daily, downtime}

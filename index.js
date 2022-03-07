@@ -25,6 +25,9 @@ client.on("messageCreate", function(message) {
     case 'categories':
       categories.categoryList(message);
       break;
+    case 'daily':
+      downtime.daily(message, args);
+      break;
     case 'downtime':
       downtime.downtime(message, args);
       break;
