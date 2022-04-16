@@ -355,7 +355,15 @@ function sortQuests(questArray) {
 
 function vassalsAlert(questsWaitingForDM, announcementChannel, roles) {
   if (questsWaitingForDM.length != 0) {
-    let stdAnnouncement = "<@&" + returnItemId(roles, "Vassals") + ">, the following quests have filled.\n";
+    let stdAnnouncement = "<@&" + returnItemId(roles, "Vassals") + ">, the following ";
+    let endAnnouncement = "Is there anyone free who can volunteer to take ";
+    if (questsWaitingForDM.length == 1) {
+      stdAnnouncement += "quest has been filled.\n";
+      endAnnouncement += "this quest?"
+    } else {
+      stdAnnouncement += "quests have filled.\n";
+      endAnnouncement += "these quests?";
+    }
     questsWaitingForDM.forEach(questWaiting => {
       stdAnnouncement += questWaiting[0] + ", the party will be: ";
       let usersWaiting = "";
@@ -364,7 +372,7 @@ function vassalsAlert(questsWaitingForDM, announcementChannel, roles) {
       });
       stdAnnouncement += usersWaiting.slice(0, (usersWaiting.length-2)) + "\n";
     });
-    stdAnnouncement += "Is there anyone free who can volunteer to take these quests?  Many thanks.";
+    stdAnnouncement += endAnnouncement + "  Many thanks.";
     if (debug) {
       console.log(stdAnnouncement);
     } else {
@@ -377,7 +385,13 @@ function vassalsAlert(questsWaitingForDM, announcementChannel, roles) {
 function announce(roles, usableChannels, args, announcementChannel, questsWaitingForGuildmates) {
   // replace message with guild in the function?
   let usableRoles = buildRoleList(roles); // move to downtime function?
-  let stdAnnouncement = "<@&" + returnItemId(usableRoles, "Blades") + "> the weekly downtime has been applied.  As a reminder you can only spend downtime or shop if you are not in a quest or if your quest has not left the guild hall.\nPlease ask <@&" + returnItemId(usableRoles, "Knights") + "> or <@&" + returnItemId(usableRoles, "Squires") + "> for spending downtime, a document of suggested activities can be found in <#" + returnItemId(usableChannels, "gameplay-reference") + ">.\n\nQuests Looking For Guildmates:\n";
+  let stdAnnouncement = "<@&" + returnItemId(usableRoles, "Blades") + "> the weekly downtime has been applied.  As a reminder you can only spend downtime or shop if you are not in a quest or if your quest has not left the guild hall.\nPlease ask <@&" + returnItemId(usableRoles, "Knights") + "> or <@&" + returnItemId(usableRoles, "Squires") + "> for spending downtime, a document of suggested activities can be found in <#" + returnItemId(usableChannels, "gameplay-reference") + ". \n\n";
+  if (questsWaitingForGuildmates.length == 0 || questsWaitingForGuildmates.length > 1) {
+    stdAnnouncement += "Quests ";
+  } else {
+    stdAnnouncement += "Quest ";
+  }
+  stdAnnouncement += "Waiting For Guildmates:\n";
   if (questsWaitingForGuildmates.length == 0) {
     stdAnnouncement += "None";
   } else {
@@ -434,15 +448,11 @@ async function daily(message, args) {
   if (!args.includes('-silent')) {
     vassalsAlert(questsChecked[2], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "briefing-room")), usableRoles);
   } else {
-    console.log(questsChecked[2]);
+    console.log("Silent argument has been passed - announcement will not trigger");
   }
   // adding the output sent to vassals and blades along with the roster to the council.
   questsChecked[1].push(questsChecked[0], questsChecked[2], rosterOutput);
-  if (!args.includes('-silent')) {
-    councilAlert(questsChecked[1], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff")));
-  } else {
-    console.log(questsChecked[1]);
-  }
+  councilAlert(questsChecked[1], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff")));
   return [usableChannels, questsChecked[0]];
 }
 
@@ -451,7 +461,7 @@ function downtime(message, args) {
     if (!args.includes('-silent')) {
       announce(message.guild.roles.cache, announcement[0], args, message.guild.channels.cache.filter(m => m.id === returnItemId(announcement[0], "announcements")), announcement[1]);
     } else {
-      console.log(announcement);
+      console.log("Silent argument has been passed - announcement will not trigger");
     }
   });
   return;
