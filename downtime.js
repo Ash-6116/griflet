@@ -431,16 +431,28 @@ async function daily(message, args) {
   // roster will return the authors of any sheets not yet checked in an array [new, in progress]
   const rosterOutput = await roster(message.guild.channels.cache.filter(channel => channel.name === 'roster'));
   const questsChecked = await questCheck(message.guild, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff"))); // returns any quests awaiting BLADES
-  vassalsAlert(questsChecked[2], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "briefing-room")), usableRoles);
+  if (!args.includes('-silent')) {
+    vassalsAlert(questsChecked[2], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "briefing-room")), usableRoles);
+  } else {
+    console.log(questsChecked[2]);
+  }
   // adding the output sent to vassals and blades along with the roster to the council.
   questsChecked[1].push(questsChecked[0], questsChecked[2], rosterOutput);
-  councilAlert(questsChecked[1], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff")));
+  if (!args.includes('-silent')) {
+    councilAlert(questsChecked[1], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff")));
+  } else {
+    console.log(questsChecked[1]);
+  }
   return [usableChannels, questsChecked[0]];
 }
 
 function downtime(message, args) {
   daily(message, args).then(announcement => {
-    announce(message.guild.roles.cache, announcement[0], args, message.guild.channels.cache.filter(m => m.id === returnItemId(announcement[0], "announcements")), announcement[1]);
+    if (!args.includes('-silent')) {
+      announce(message.guild.roles.cache, announcement[0], args, message.guild.channels.cache.filter(m => m.id === returnItemId(announcement[0], "announcements")), announcement[1]);
+    } else {
+      console.log(announcement);
+    }
   });
   return;
 }
