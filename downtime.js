@@ -67,7 +67,7 @@ function reactedQuests(questBoards) {
   });
 }
 
-async function pinnedCaravans(cache, guild) {
+async function pinnedCaravans(cache) {
   const categoryList = Array.from( cache.keys() );
   for(let index = 0; index < cache.size; index++) {
     let children = cache.get(categoryList[index]).children;
@@ -155,7 +155,7 @@ function councilAlert(alerts, council) {
   if (runningCaravans.length != 0) {
     outputString += "Filled Caravans:\n";
     runningCaravans.forEach(caravan => {
-      outputString += caravan[0] + "\n";
+      outputString += caravan[0] + "\nPlayers: ";
       caravan[1].forEach(user => {
         outputString += user.tag + ", ";
       });
@@ -297,7 +297,7 @@ async function questCheck(guild, council) {
   // NEED - Running Quests
   let outputString = "";
   const questsReacted = await reactedQuests(cache.filter(channel => channel.name === 'quest-board'));
-  const runningCaravans = await pinnedCaravans(cache.filter(channel => channel.type === 'GUILD_CATEGORY' && channel.name === 'Quest Caravans'), guild);
+  const runningCaravans = await pinnedCaravans(cache.filter(channel => channel.type === 'GUILD_CATEGORY' && channel.name === 'Quest Caravans'));
   const checkedQuests = await errorCheckQuests(questsReacted, runningCaravans, guild);
   /**
    *  checkedQuests[0] == questsForGuildmates
