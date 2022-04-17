@@ -128,11 +128,20 @@ function councilAlert(alerts, council) {
     });
     outputString += "\n";
   }
-  if (bladesWaiting.length != 0) {
+  if (bladesWaiting != undefined) {
     //bladesWaiting.push(debugQuest); // debug
     outputString += "The following quests are waiting for Blades to sign up before starting:\n";
-    bladesWaiting.forEach(quest => {
-      outputString += quest + "\n";
+    let tierNumber = 1;
+    bladesWaiting.forEach(tier => {
+      if (tier.length != 0) {
+        outputString += "Tier " + tierNumber + ": "
+        let questsForTier = "";
+        tier.forEach(quest => {
+          questsForTier += quest + ", ";
+        });
+        outputString += questsForTier.slice(0, (questsForTier.length-2)) + "\n";
+      }
+      tierNumber++;
     });
     outputString += "\n";
   }
@@ -154,6 +163,7 @@ function councilAlert(alerts, council) {
   }
   if (runningCaravans.length != 0) {
     outputString += "Filled Caravans:\n";
+    runningCaravans.sort((a,b) => a[0].substring(14,a[0].indexOf(":"))-b[0].substring(14,b[0].indexOf(":")));
     runningCaravans.forEach(caravan => {
       outputString += caravan[0] + "\nPlayers: ";
       caravan[1].forEach(user => {
@@ -165,10 +175,12 @@ function councilAlert(alerts, council) {
   }
   if (emptyCaravans.length != 0) {
     outputString += "Empty Caravans:\n";
+    emptyCaravans.sort((a,b) => b.substring(b.lastIndexOf("-"),)-a.substring(a.lastIndexOf("-"),));
     emptyCaravans.forEach(caravan => {
       outputString += caravan + "\n";
     });
     outputString += "\n";
+    //console.log(array.sort((a,b) => a-b));
   }
   if (alerts.length != 0) {
     outputString += "Alerts for Council:\n";
@@ -209,7 +221,6 @@ function resolveReactions(reaction) {
 }
 
 async function errorCheckQuests(questsReacted, runningCaravans, guild) {
-  console.log(runningCaravans);
   const questsForGuildmates = [], questsForVassals = [], alertsForCouncil = [], caravanOutput = [], reactionOutput = [], emptyCaravans = []; // using reactionOutput to convert questsReacted for council output
   for(let index = 0; index < questsReacted.length; index ++) { // iterating over the quests with reactions
     let quest = questsReacted[index];
@@ -287,7 +298,14 @@ async function errorCheckQuests(questsReacted, runningCaravans, guild) {
     }
   });
   alertsForCouncil.push(reactionOutput, caravanOutput, emptyCaravans);
-  return [questsForGuildmates, alertsForCouncil, questsForVassals];
+  let sortedQuests;
+  if (questsForGuildmates.length > 0) {
+    sortedQuests = sortQuests(questsForGuildmates);
+    console.log(sortedQuests);
+  }
+  let sortedVassals;
+  questsForVassals.sort((a,b) => a[0].match(/\d/)[0]-b[0].match(/\d/)[0]);
+  return [sortedQuests, alertsForCouncil, questsForVassals];
 }
 
 async function questCheck(guild, council) {
@@ -393,19 +411,17 @@ function announce(roles, usableChannels, args, announcementChannel, questsWaitin
   // replace message with guild in the function?
   let usableRoles = buildRoleList(roles); // move to downtime function?
   let stdAnnouncement = "<@&" + returnItemId(usableRoles, "Blades") + "> the weekly downtime has been applied.  As a reminder you can only spend downtime or shop if you are not in a quest or if your quest has not left the guild hall.\nPlease ask <@&" + returnItemId(usableRoles, "Knights") + "> or <@&" + returnItemId(usableRoles, "Squires") + "> for spending downtime, a document of suggested activities can be found in <#" + returnItemId(usableChannels, "gameplay-reference") + ">. \n\n";
-  if (questsWaitingForGuildmates.length == 0 || questsWaitingForGuildmates.length > 1) {
-    stdAnnouncement += "Quests ";
+  if (questsWaitingForGuildmates == undefined) {
+    stdAnnouncement += "Quests Waiting For Guildmates:\nNone";
   } else {
-    stdAnnouncement += "Quest ";
-  }
-  stdAnnouncement += "Waiting For Guildmates:\n";
-  if (questsWaitingForGuildmates.length == 0) {
-    stdAnnouncement += "None";
-  } else {
-    // Need to SORT the quests by Tier - needs to become its own function for reuse of code!!
-    const sortedQuests = sortQuests(questsWaitingForGuildmates);
+    if (questsWaitingForGuildmates.length > 1) {
+      stdAnnouncement += "Quests ";
+    } else {
+      stdAnnouncement += "Quest ";
+    }
+    stdAnnouncement += "Waiting For Guildmates:\n";
     let tierNumber = 1;
-    sortedQuests.forEach(tier => {
+    questsWaitingForGuildmates.forEach(tier => {
       if (tier.length != 0) {
         stdAnnouncement += "Tier " + tierNumber + ": "
         let questsForTier = "";
@@ -455,7 +471,7 @@ async function daily(message, args) {
   if (!args.includes('-silent')) {
     vassalsAlert(questsChecked[2], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "briefing-room")), usableRoles);
   } else {
-    console.log("Silent argument has been passed - announcement will not trigger");
+    console.log("Silent argument has been passed - announcement will not trigger\n" + questsChecked[2]);
   }
   // adding the output sent to vassals and blades along with the roster to the council.
   questsChecked[1].push(questsChecked[0], questsChecked[2], rosterOutput);
@@ -468,7 +484,7 @@ function downtime(message, args) {
     if (!args.includes('-silent')) {
       announce(message.guild.roles.cache, announcement[0], args, message.guild.channels.cache.filter(m => m.id === returnItemId(announcement[0], "announcements")), announcement[1]);
     } else {
-      console.log("Silent argument has been passed - announcement will not trigger");
+      console.log("Silent argument has been passed - announcement will not trigger\n" + announcement[1]);
     }
   });
   return;
