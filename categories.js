@@ -92,4 +92,4 @@ function categoryList(message) { // main function
   return;
 }
 
-module.exports = {categoryList}; // this exports the categoryList function
+module.exports = {resolveDate, categoryList}; // this exports the resolveDate and categoryList functions

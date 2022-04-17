@@ -1,7 +1,8 @@
 // Importing own modules here
 const output = require("./output.js"); // Gives access to HELP, MIRROR, and ARRAYMIRROR functions
+const categories = require("./categories.js"); // Gives access to RESOLVEDATE function
 
-const debug = false; // used to switch between debug mode (true) and release (false)
+const debug = true; // used to switch between debug mode (true) and release (false)
 
 function roster(rosterChannel) {
   return new Promise((resolve, reject) => {
@@ -66,7 +67,7 @@ function reactedQuests(questBoards) {
   });
 }
 
-async function pinnedCaravans(cache) {
+async function pinnedCaravans(cache, guild) {
   const categoryList = Array.from( cache.keys() );
   for(let index = 0; index < cache.size; index++) {
     let children = cache.get(categoryList[index]).children;
@@ -79,7 +80,13 @@ async function pinnedCaravans(cache) {
           pins.push(child.name, null);
         } else {
           pinned.forEach(pin => {
-            pins.push(child.name, questTitle(pin.content));
+            let DM = pin.content.substring(
+              pin.content.indexOf("DM: ") + 3,
+              pin.content.lastIndexOf("\n")); // this'll return the DM's id tag number
+            DM = pin.mentions.users.get(DM.substring(
+              DM.indexOf("!") + 1,
+              DM.lastIndexOf(">")));
+            pins.push(child.name, questTitle(pin.content), DM.tag, categories.resolveDate(pin.createdTimestamp));
           });
         }
         channels.push(pins);
@@ -150,7 +157,7 @@ function councilAlert(alerts, council) {
     runningCaravans.forEach(caravan => {
       outputString += caravan[0] + "\n";
       caravan[1].forEach(user => {
-        outputString += user.tag + ", "; // currently missing Arrows!!!
+        outputString += user.tag + ", ";
       });
       outputString = outputString.slice(0, (outputString.length-2)) + "\n";
     });
@@ -243,7 +250,7 @@ async function errorCheckQuests(questsReacted, runningCaravans, guild) {
           if (blades.length == currentBlades) {
             // this caravan is properly filled
             console.log(title + " is running in " + caravan[0]);
-            caravanOutput.push([caravan[0] + ": " + title, blades]);
+            caravanOutput.push([caravan[0] + ": " + title + "\nDM: " + caravan[2] + "\tDate Started: " + caravan[3], blades]); // TODO change DM tag to name!!!
           } else {
             alertsForCouncil.push("There's fewer Blades in the caravan than reacted to the quest. " + title + " " + caravan[0]);
             // TODO - need to sort out what should happen here!!!
@@ -290,7 +297,7 @@ async function questCheck(guild, council) {
   // NEED - Running Quests
   let outputString = "";
   const questsReacted = await reactedQuests(cache.filter(channel => channel.name === 'quest-board'));
-  const runningCaravans = await pinnedCaravans(cache.filter(channel => channel.type === 'GUILD_CATEGORY' && channel.name === 'Quest Caravans'));
+  const runningCaravans = await pinnedCaravans(cache.filter(channel => channel.type === 'GUILD_CATEGORY' && channel.name === 'Quest Caravans'), guild);
   const checkedQuests = await errorCheckQuests(questsReacted, runningCaravans, guild);
   /**
    *  checkedQuests[0] == questsForGuildmates
@@ -385,7 +392,7 @@ function vassalsAlert(questsWaitingForDM, announcementChannel, roles) {
 function announce(roles, usableChannels, args, announcementChannel, questsWaitingForGuildmates) {
   // replace message with guild in the function?
   let usableRoles = buildRoleList(roles); // move to downtime function?
-  let stdAnnouncement = "<@&" + returnItemId(usableRoles, "Blades") + "> the weekly downtime has been applied.  As a reminder you can only spend downtime or shop if you are not in a quest or if your quest has not left the guild hall.\nPlease ask <@&" + returnItemId(usableRoles, "Knights") + "> or <@&" + returnItemId(usableRoles, "Squires") + "> for spending downtime, a document of suggested activities can be found in <#" + returnItemId(usableChannels, "gameplay-reference") + ". \n\n";
+  let stdAnnouncement = "<@&" + returnItemId(usableRoles, "Blades") + "> the weekly downtime has been applied.  As a reminder you can only spend downtime or shop if you are not in a quest or if your quest has not left the guild hall.\nPlease ask <@&" + returnItemId(usableRoles, "Knights") + "> or <@&" + returnItemId(usableRoles, "Squires") + "> for spending downtime, a document of suggested activities can be found in <#" + returnItemId(usableChannels, "gameplay-reference") + ">. \n\n";
   if (questsWaitingForGuildmates.length == 0 || questsWaitingForGuildmates.length > 1) {
     stdAnnouncement += "Quests ";
   } else {
