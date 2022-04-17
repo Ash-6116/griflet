@@ -2,7 +2,7 @@
 const output = require("./output.js"); // Gives access to HELP, MIRROR, and ARRAYMIRROR functions
 const categories = require("./categories.js"); // Gives access to RESOLVEDATE function
 
-const debug = true; // used to switch between debug mode (true) and release (false)
+const debug = false; // used to switch between debug mode (true) and release (false)
 
 function roster(rosterChannel) {
   return new Promise((resolve, reject) => {
