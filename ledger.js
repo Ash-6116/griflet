@@ -90,7 +90,7 @@ function pullList(auth) {
          if (row[10] != 'Council Member') {
            console.log(`${row[0]}, ${row[10]}`);
            //Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + downtimeDate.getFullYear() + "." + downtimeDate.getMonth().toString().padStart(2, '0') + "." + downtimeDate.getDate().toString().padStart(2, '0')]); // posts an inaccurate date stamp
-           Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + downtimeDateString);
+           Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + downtimeDateString]);
          }
        });
        console.log(Blades);
