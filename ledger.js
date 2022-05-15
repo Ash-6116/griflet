@@ -82,8 +82,8 @@ function pullList(auth) {
        rows.map((row) => {
          if (row[10] != 'Council Member') {
            console.log(`${row[0]}, ${row[10]}`);
-           //var date = new Date();
-           var date = Date.now();
+           var date = new Date();
+           //var date = Date.now();
            Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + date.getFullYear() + "." + date.getMonth().toString().padStart(2, '0') + "." + date.getDate().toString().padStart(2, '0')]); // need current DATE
          }
        });
