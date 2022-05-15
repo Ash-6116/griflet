@@ -6,6 +6,7 @@ const prefix = "!";
 const categories = require("./categories.js");
 const downtime = require("./downtime.js");
 const output = require("./output.js");
+const ledger = require("./ledger.js");
 
 function ping(message) {
   const timeTaken = Date.now() - message.createdTimestamp;
@@ -34,6 +35,9 @@ client.on("messageCreate", function(message) {
     case 'ping':
       ping(message);
       break;
+   case 'ledger':
+     ledger.main(args);
+     break;
    case 'griflet':
       output.mirror(output.help(), message);
       break;
