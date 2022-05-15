@@ -84,9 +84,9 @@ function pullList(auth) {
            console.log(`${row[0]}, ${row[10]}`);
            //var date = new Date();
            //var date = {return new Date() };
-           let date = new Date();
-           console.log("Date: " + date);
-           Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + date.getFullYear() + "." + date.getMonth().toString().padStart(2, '0') + "." + date.getDate().toString().padStart(2, '0')]); // need current DATE
+           let downtimeDate = new Date();
+           console.log("Date: " + downtimeDate);
+           Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + downtimeDate.getFullYear() + "." + downtimeDate.getMonth().toString().padStart(2, '0') + "." + downtimeDate.getDate().toString().padStart(2, '0')]); // need current DATE
          }
        });
        console.log(Blades);
