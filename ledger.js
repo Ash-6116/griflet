@@ -85,6 +85,7 @@ function pullList(auth) {
            //var date = new Date();
            //var date = {return new Date() };
            let date = new Date();
+           console.log("Date: " + date);
            Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + date.getFullYear() + "." + date.getMonth().toString().padStart(2, '0') + "." + date.getDate().toString().padStart(2, '0')]); // need current DATE
          }
        });
