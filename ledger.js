@@ -9,6 +9,7 @@ const SCOPES = ['https://www,googleapis.com/auth/spreadsheets.readonly'];
 const TOKEN_PATH = 'token.json';
 
 /**
+// autoruns when ledger.js is opened
 // Load client secrets from a local file.
 fs.readFile('client_secret.json', (err, content) => {
   if (err) return console.log('Error loading client secret file:', err);
@@ -70,6 +71,9 @@ function getNewToken(oAuth2Client, callback) {
 function pullList(auth) {
    let Blades = [];
    const sheets = google.sheets({version: 'v4', auth});
+   let downtimeDate = new Date();
+   console.log("Date: " + downtimeDate);
+   console.log(downtimeDate.getFullYear());
    sheets.spreadsheets.values.get({
      spreadsheetId: '1orT1wsZNaxR2cYrfY_bZ1dhOQFxldskdGXgSxjq5b9I',
      range: 'Roster!C2:M',
@@ -82,11 +86,7 @@ function pullList(auth) {
        rows.map((row) => {
          if (row[10] != 'Council Member') {
            console.log(`${row[0]}, ${row[10]}`);
-           //var date = new Date();
-           //var date = {return new Date() };
-           let downtimeDate = new Date();
-           console.log("Date: " + downtimeDate);
-           Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + downtimeDate.getFullYear() + "." + downtimeDate.getMonth().toString().padStart(2, '0') + "." + downtimeDate.getDate().toString().padStart(2, '0')]); // need current DATE
+           Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + downtimeDate.getFullYear() + "." + downtimeDate.getMonth().toString().padStart(2, '0') + "." + downtimeDate.getDate().toString().padStart(2, '0')]); // posts an inaccurate date stamp
          }
        });
        console.log(Blades);
