@@ -74,7 +74,7 @@ function pullList(auth) {
    let downtimeDate = new Date();
    console.log("Date: " + downtimeDate);
    console.log(downtimeDate.getFullYear());
-   console.log(downtimeDate.getMonth().toString().padStart(2, '0'));
+   console.log(downtimeDate.getMonth()+1.toString().padStart(2, '0')); // this is causing the error - could be seeing January as '0'
    console.log(downtimeDate.getDate().toString().padStart(2, '0'));
    sheets.spreadsheets.values.get({
      spreadsheetId: '1orT1wsZNaxR2cYrfY_bZ1dhOQFxldskdGXgSxjq5b9I',
