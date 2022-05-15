@@ -8,12 +8,14 @@ const SCOPES = ['https://www,googleapis.com/auth/spreadsheets.readonly'];
 // created automatically when the authorization flow completes for the first time.
 const TOKEN_PATH = 'token.json';
 
+/**
 // Load client secrets from a local file.
 fs.readFile('client_secret.json', (err, content) => {
   if (err) return console.log('Error loading client secret file:', err);
   // Authorise a client with credentials, then call the Google Sheets API.
   authorize(JSON.parse(content), ledger);
 });
+**/
 
 /**
 * Create an OAuth2 client with the given credentials,
@@ -80,7 +82,8 @@ function pullList(auth) {
        rows.map((row) => {
          if (row[10] != 'Council Member') {
            console.log(`${row[0]}, ${row[10]}`);
-           var date = new Date();
+           //var date = new Date();
+           var date = Date.now();
            Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + date.getFullYear() + "." + date.getMonth().toString().padStart(2, '0') + "." + date.getDate().toString().padStart(2, '0')]); // need current DATE
          }
        });
@@ -108,7 +111,13 @@ function ledger(auth) {
 }
 
 function main (args) {
-  
+  // Load client secrets from a local file.
+ fs.readFile('client_secret.json', (err, content) => {
+   if (err) return console.log('Error loading client secret file:', err);
+   // Authorise a client with credentials, then call the Google Sheets API.
+   authorize(JSON.parse(content), ledger);
+ });
+
 }
 
 module.exports = {main}
