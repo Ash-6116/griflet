@@ -73,9 +73,10 @@ function pullList(auth) {
    const sheets = google.sheets({version: 'v4', auth});
    let downtimeDate = new Date();
    console.log("Date: " + downtimeDate);
-   console.log(downtimeDate.getFullYear());
-   console.log((downtimeDate.getMonth()+1).toString().padStart(2, '0')); // this is causing the error - could be seeing January as '0'
-   console.log(downtimeDate.getDate().toString().padStart(2, '0'));
+   const downtimeDateString = downtimeDate.getFullYear() + "." + (downtimeDate.getMonth()+1).toString().padStart(2, '0') + downtimeDate.getDate().toString().padStart(2, '0');
+   //console.log(downtimeDate.getFullYear());
+   //console.log((downtimeDate.getMonth()+1).toString().padStart(2, '0')); // this is causing the error - could be seeing January as '0'
+   //console.log(downtimeDate.getDate().toString().padStart(2, '0'));
    sheets.spreadsheets.values.get({
      spreadsheetId: '1orT1wsZNaxR2cYrfY_bZ1dhOQFxldskdGXgSxjq5b9I',
      range: 'Roster!C2:M',
@@ -88,7 +89,8 @@ function pullList(auth) {
        rows.map((row) => {
          if (row[10] != 'Council Member') {
            console.log(`${row[0]}, ${row[10]}`);
-           Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + downtimeDate.getFullYear() + "." + downtimeDate.getMonth().toString().padStart(2, '0') + "." + downtimeDate.getDate().toString().padStart(2, '0')]); // posts an inaccurate date stamp
+           //Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + downtimeDate.getFullYear() + "." + downtimeDate.getMonth().toString().padStart(2, '0') + "." + downtimeDate.getDate().toString().padStart(2, '0')]); // posts an inaccurate date stamp
+           Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + downtimeDateString);
          }
        });
        console.log(Blades);
