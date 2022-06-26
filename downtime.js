@@ -80,12 +80,16 @@ async function pinnedCaravans(cache) {
           pins.push(child.name, null);
         } else {
           pinned.forEach(pin => {
+            console.log(pin);
             let DM = pin.content.substring(
               pin.content.indexOf("DM: ") + 3,
               pin.content.lastIndexOf("\n")); // this'll return the DM's id tag number
-            DM = pin.mentions.users.get(DM.substring(
-              DM.indexOf("!") + 1,
-              DM.lastIndexOf(">")));
+              DM_substring = DM.substring(DM.indexOf("@") + 1, DM.lastIndexOf(">"));
+              console.log(DM_substring);
+              if (DM_substring[0] == "!") {
+                DM_substring = DM_substring.substring(1,DM_substring.length);
+              }
+              DM = pin.mentions.users.get(DM_substring);
             pins.push(child.name, questTitle(pin.content), DM.tag, categories.resolveDate(pin.createdTimestamp));
           });
         }
