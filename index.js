@@ -40,7 +40,7 @@ client.on("messageCreate", function(message) {
 
   switch (command) {
     case 'categories':
-      if (roleTest(message)) { categories.categoryList(message); } else { warnRole(message, 'categories); }
+      if (roleTest(message)) { categories.categoryList(message); } else { warnRole(message, 'categories'); }
       break;
     case 'daily':
       if (roleTest(message)) { downtime.daily(message, args); } else { warnRole(message, 'daily'); }
