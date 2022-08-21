@@ -74,7 +74,7 @@ async function messageLast(map) {
 function childList(category) {
   const listChannels = [];
   category.children.forEach(child => {
-    listChannels.push(child)
+    listChannels.push(child);
   });
   return listChannels;
 }

@@ -123,6 +123,7 @@ function councilAlert(alerts, council) {
       }
     });
     outputString += "\n";
+    // Insert pause point here??
   }
   if (vassalsWaiting.length != 0) {
     //vassalsWaiting.push(debugQuest); // debug
@@ -278,8 +279,10 @@ async function errorCheckQuests(questsReacted, runningCaravans, guild) {
                 questsForVassals.push([title, questArray[1].slice(0,-1)]);
                 break;
               case (questArray[1].length-1 < 4): // less than 4 crossed swords - valid reaction
-                console.log("Need to alert the BLADES: " + title);
-                questsForGuildmates.push(title);
+                console.log("Need to alert the BLADES: " + title); // Add number of signups here???
+                console.log(questArray[1].length-1);
+                questsForGuildmates.push([title, questArray[1].length-1]);
+                //questsForGuildmates.push(title);
                 break;
               case (questArray[1].length-1 > 4): // more than 4 crossed swords on a quest not running
                 console.log("Need to alert the COUNCIL: " + title);
@@ -287,11 +290,11 @@ async function errorCheckQuests(questsReacted, runningCaravans, guild) {
                 break;
             }
           } else {  // too many reaction emojis!!!
-            alertsForCouncil.push("This quest has multiple reaction emojis. " + title);
+            alertsForCouncil.push("This quest has multiple reaction emojis. " + title); // this is NOT TRIGGERED
           }
         }
       } else {
-        alertsForCouncil.push("Invalid reaction!!! " + title);
+        alertsForCouncil.push("Invalid reaction!!! " + title); // - BROKEN TO BE DELETED
       }
     }
   }
@@ -363,19 +366,20 @@ function sortQuests(questArray) {
   // Blades arrays have 4 tiers
   const tier1 = [], tier2 = [], tier3 = [], tier4 = [];
   questArray.forEach(quest => {
-    const splitQuestObject = quest.split(" - "), title = splitQuestObject[1]; // splits the string
+    console.log(quest);
+    const splitQuestObject = quest[0].split(" - "), title = splitQuestObject[1]; // splits the string
     switch (splitQuestObject[0].replace(/[^0-9]/g, '')) { // strips the string to just the quest tier number
       case '1':
-        tier1.push(title);
+        tier1.push([title, quest[1]]);
         break;
       case '2':
-        tier2.push(title);
+        tier2.push([title, quest[1]]);
         break;
       case '3':
-        tier3.push(title);
+        tier3.push([title, quest[1]]);
         break;
       case '4':
-        tier4.push(title);
+        tier4.push([title, quest[1]]);
         break;
     }
   });
@@ -430,7 +434,13 @@ function announce(roles, usableChannels, args, announcementChannel, questsWaitin
         stdAnnouncement += "Tier " + tierNumber + ": "
         let questsForTier = "";
         tier.forEach(quest => {
-          questsForTier += quest + ", ";
+          questsForTier += quest[0] + " (" + quest[1];
+          if (quest[1] == 1) {
+            questsForTier += " Blade ";
+          } else {
+            questsForTier += " Blades ";
+          }
+          questsForTier += "Signed Up), ";
         });
         stdAnnouncement += questsForTier.slice(0, (questsForTier.length-2)) + "\n";
       }
