@@ -8,7 +8,6 @@ const SCOPES = ['https://www,googleapis.com/auth/spreadsheets.readonly'];
 // created automatically when the authorization flow completes for the first time.
 const TOKEN_PATH = 'token.json';
 
-/**
 // autoruns when ledger.js is opened
 // Load client secrets from a local file.
 fs.readFile('client_secret.json', (err, content) => {
@@ -16,7 +15,6 @@ fs.readFile('client_secret.json', (err, content) => {
   // Authorise a client with credentials, then call the Google Sheets API.
   authorize(JSON.parse(content), ledger);
 });
-**/
 
 /**
 * Create an OAuth2 client with the given credentials,
@@ -114,11 +112,11 @@ function ledger(auth) {
 
 function main (args) {
   // Load client secrets from a local file.
- fs.readFile('client_secret.json', (err, content) => {
-   if (err) return console.log('Error loading client secret file:', err);
+ //fs.readFile('client_secret.json', (err, content) => {
+   //if (err) return console.log('Error loading client secret file:', err);
    // Authorise a client with credentials, then call the Google Sheets API.
    authorize(JSON.parse(content), ledger);
- });
+ //});
 
 }
 
