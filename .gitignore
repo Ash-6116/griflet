@@ -1,2 +1,15 @@
 node_modules
 config.json
+*.backup
+*.swp
+*.sh
+index-debug.js
+.gitignore
+downtime.js.old
+*.save
+dev.js
+key*
+cheatsheet.txt
+heroku-recovery-codes.txt
+google-credentials.json
+downtime.js.save.*

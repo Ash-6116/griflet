@@ -1,3 +1,4 @@
+const fs = require('fs');
 // Importing own modules here
 const output = require("./output.js"); // Gives access to HELP, MIRROR, and ARRAYMIRROR functions
 const categories = require("./categories.js"); // Gives access to RESOLVEDATE function
@@ -355,7 +356,7 @@ function returnItemId(usableItem, target) {
 function buildChannelList(cache) {
   let usableChannels = [];
   cache.forEach(channel => {
-    if (channel.name == "gameplay-reference" || channel.name == "announcements" || channel.name == "briefing-room" || channel.name == "bot-stuff") {
+    if (channel.name == "gameplay-reference" || channel.name == "announcements" || channel.name == "briefing-room" || channel.name == "bot-stuff" || channel.name == "blades-confessionals") {
       usableChannels.push([channel.id, channel.name]);
     }
   });
@@ -461,6 +462,20 @@ function announce(roles, usableChannels, args, announcementChannel, questsWaitin
   }
 }
 
+function prompt(message) {
+  let usableChannels = buildChannelList(message.guild.channels.cache.filter(m => m.type === 'GUILD_TEXT')); 
+  let announcementChannel = message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "blades-confessionals"));
+  fs.readFile('prompts.txt', 'utf8', (err, data) => {
+  	if (err) {
+  		return console.log(err);
+  	}
+  	var array = data.toString().split("\n");
+  	// TODO Need to insert a STANDARD MESSAGE here to be sent with every PROMPT
+  	output.specificMirror(array[Math.floor(Math.random() * array.length)], announcementChannel);
+  });
+  return;
+}
+
 async function daily(message, args) {
   // TODO - is message the appropriate item for this module?
   /**
@@ -497,6 +512,7 @@ function downtime(message, args) {
   daily(message, args).then(announcement => {
     if (!args.includes('-silent')) {
       announce(message.guild.roles.cache, announcement[0], args, message.guild.channels.cache.filter(m => m.id === returnItemId(announcement[0], "announcements")), announcement[1]);
+      //prompt(message); // to be activated when approved
     } else {
       console.log("Silent argument has been passed - announcement will not trigger\n" + announcement[1]);
     }
@@ -504,4 +520,4 @@ function downtime(message, args) {
   return;
 }
 
-module.exports = {daily, downtime}
+module.exports = {daily, downtime, prompt}

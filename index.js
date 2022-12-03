@@ -48,6 +48,9 @@ client.on("messageCreate", function(message) {
     case 'downtime':
       if (roleTest(message)) { downtime.downtime(message, args); } else { warnRole(message, 'downtime'); }
       break;
+    case 'prompt':
+      if (roleTest(message)) { downtime.prompt(message); } else { warnRole(message, 'prompt'); }
+      break;
     case 'ping':
       ping(message);
       break;
@@ -63,3 +66,4 @@ client.on("messageCreate", function(message) {
 });
 
 client.login(process.env.GRIFLET_TOKEN); // COMMENT OUT IN DEV BUILDS
+console.log("System Ready...");
