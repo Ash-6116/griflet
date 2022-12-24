@@ -471,7 +471,8 @@ function prompt(message) {
   	}
   	var array = data.toString().split("\n");
   	// TODO Need to insert a STANDARD MESSAGE here to be sent with every PROMPT
-  	output.specificMirror(array[Math.floor(Math.random() * array.length)], announcementChannel);
+  	let standard = "You can describe your character's answer to the following prompt either in character as them or out of character describing  it yourself.  Please remember to keep things civil, even here you are under the watchful eye of the council and the rules for both Blades and the server as a whole still apply.\n\n";
+  	output.specificMirror(standard + array[Math.floor(Math.random() * array.length)], announcementChannel);
   });
   return;
 }
