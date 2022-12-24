@@ -512,7 +512,7 @@ function downtime(message, args) {
   daily(message, args).then(announcement => {
     if (!args.includes('-silent')) {
       announce(message.guild.roles.cache, announcement[0], args, message.guild.channels.cache.filter(m => m.id === returnItemId(announcement[0], "announcements")), announcement[1]);
-      //prompt(message); // to be activated when approved
+      prompt(message);
     } else {
       console.log("Silent argument has been passed - announcement will not trigger\n" + announcement[1]);
     }
