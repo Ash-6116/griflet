@@ -10,11 +10,11 @@ const TOKEN_PATH = 'token.json';
 
 // autoruns when ledger.js is opened
 // Load client secrets from a local file.
-fs.readFile('client_secret.json', (err, content) => {
-  if (err) return console.log('Error loading client secret file:', err);
+//fs.readFile('client_secret.json', (err, content) => {
+  //if (err) return console.log('Error loading client secret file:', err);
   // Authorise a client with credentials, then call the Google Sheets API.
-  authorize(JSON.parse(content), ledger);
-});
+  //authorize(JSON.parse(content), ledger);
+//});
 
 /**
 * Create an OAuth2 client with the given credentials,
