@@ -1,6 +1,6 @@
 {
   "name": "griflet",
-  "version": "1.0.0",
+  "version": "1.0.69",
   "description": "",
   "main": "index.js",
   "dependencies": {
@@ -19,12 +19,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/2reesa/griflet.git"
+    "url": "git+https://github.com/ash#6116/griflet.git"
   },
-  "author": "",
+  "author": "ash#6116",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/2reesa/griflet/issues"
+    "url": "https://github.com/ash#6116/griflet/issues"
   },
-  "homepage": "https://github.com/2reesa/griflet#readme"
+  "homepage": "https://github.com/ash#6116/griflet#readme"
 }
