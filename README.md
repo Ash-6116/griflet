@@ -1,14 +1,9 @@
 Griflet - A Discord Admin Bot
 
 What this project is for?
-Griflet started as a means to automate a specific task on a D&D Roleplay Server involving checking activity
-in Discord channels.  To do this, Griflet builds a list of Categories on a server, then checks each Category
-for the last message date for each Channel, before reducing the result to the last message date per Category
-and outputting the results as a reply to the message that triggered the command.
+Griflet started as a means to automate a specific task on a D&D Roleplay Server involving checking activity in Discord channels.  To do this, Griflet builds a list of Categories on a server, then checks each Category for the last message date for each Channel, before reducing the result to the last message date per Category and outputting the results as a reply to the message that triggered the command.
 
-Over time, Griflet has grown to encompass more administrative tasks for the D&D Roleplay Server.  As a result,
-a few of the modules that encompass Griflet are specially made to accomplish such tasks.  However, the
-Categories.js module, the Output.js module, and the Index.js module are more general in nature.  The following outlines each module's current use case:
+Over time, Griflet has grown to encompass more administrative tasks for the D&D Roleplay Server.  As a result, a few of the modules that encompass Griflet are specially made to accomplish such tasks.  However, the Categories.js module, the Output.js module, and the Index.js module are more general in nature.  The following outlines each module's current use case:
 - Categories.js - used to profile a server and display last write times for each category.
 - Downtime.js - used to perform a weekly downtime routine for a D&D Roleplay Server.
 - Index.js - contains the code to boot up Griflet and the commands that Griflet can run.  These commands usually refer to code in another module such as Categories or Downtime.
@@ -16,10 +11,7 @@ Categories.js module, the Output.js module, and the Index.js module are more gen
 - Output.js - contains functions to ensure output from other modules can be written to both the bot's output console and to Discord.
 - Prompts.txt - a set of prompts for the D&D Roleplay Server, with Griflet selecting one at random during performance of the Downtime routine and sending it to the Discord server.
 
-Griflet is licensed under the Internet Software Consortium (ISC) license.  It is open-source, and can be copied,
-modified and reused for free for either private or commercial use, so long as it carries the copyright notice
-found in the LICENSE.md file or at the bottom of this README.  Meaning that Griflet's code can be customised
-for any server by anyone who wishes to do so.
+Griflet is licensed under the Internet Software Consortium (ISC) license.  It is open-source, and can be copied, modified and reused for free for either private or commercial use, so long as it carries the copyright notice found in the LICENSE.md file or at the bottom of this README.  Meaning that Griflet's code can be customised for any Discord server by anyone who wishes to do so.
 
 Copyright (c) 2021, Ash#6116
 
