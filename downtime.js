@@ -1,3 +1,4 @@
+
 const fs = require('fs');
 // Importing own modules here
 const output = require("./output.js"); // Gives access to HELP, MIRROR, and ARRAYMIRROR functions
@@ -275,7 +276,7 @@ async function errorCheckQuests(questsReacted, runningCaravans, guild) {
         } else { // quest is not running
           if (questArray.length == 2 && questArray[1].slice(-1)[0] == "⚔️") {
             switch (true) {
-              case (questArray[1].length-1 == 4): // exactly four crossed swords on a quest not running - 1 for debug.
+              case (questArray[1].length-1 == 4): // 4 - exactly four crossed swords on a quest not running - 1 for debug.
                 console.log("Need to alert the VASSALS: " + title);
                 questsForVassals.push([title, questArray[1].slice(0,-1)]);
                 break;
@@ -498,7 +499,9 @@ async function daily(message, args) {
   const rosterOutput = await roster(message.guild.channels.cache.filter(channel => channel.name === 'roster'));
   const questsChecked = await questCheck(message.guild, message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "bot-stuff"))); // returns any quests awaiting BLADES
   if (!args.includes('-silent')) {
-    vassalsAlert(questsChecked[2], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "briefing-room")), usableRoles);
+    if (!args.includes('-novassal')) {
+      vassalsAlert(questsChecked[2], message.guild.channels.cache.filter(m => m.id === returnItemId(usableChannels, "briefing-room")), usableRoles);
+    }
   } else {
     console.log("Silent argument has been passed - announcement will not trigger\n" + questsChecked[2]);
   }
@@ -510,6 +513,9 @@ async function daily(message, args) {
 
 function downtime(message, args) {
   daily(message, args).then(announcement => {
+    if (args.includes('-novassal')) {
+      args.splice(args.indexOf('novassal'), 1); // prevents the argument ending up in the Blades announcements
+    }
     if (!args.includes('-silent')) {
       announce(message.guild.roles.cache, announcement[0], args, message.guild.channels.cache.filter(m => m.id === returnItemId(announcement[0], "announcements")), announcement[1]);
       prompt(message);
