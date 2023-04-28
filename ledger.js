@@ -1,123 +1,87 @@
-const fs = require('fs');
-const readline = require('readline');
-const {google} = require('googleapis');
+const {
+  getAuthToken,
+  getSpreadsheet,
+  getSpreadsheetValues,
+  writeSpreadsheetValues
+} = require ('./googleSheetsService.js');
 
-// If modifying these scopes, delete token.json.
-const SCOPES = ['https://www,googleapis.com/auth/spreadsheets.readonly'];
-// The file token/json stores the user's access and refresh tokens, and is
-// created automatically when the authorization flow completes for the first time.
-const TOKEN_PATH = 'token.json';
+const spreadsheetId = '1orT1wsZNaxR2cYrfY_bZ1dhOQFxldskdGXgSxjq5b9I'; // Id goes here
+const sheetName = 'Roster'; // Sheet name goes here
 
-// autoruns when ledger.js is opened
-// Load client secrets from a local file.
-//fs.readFile('client_secret.json', (err, content) => {
-  //if (err) return console.log('Error loading client secret file:', err);
-  // Authorise a client with credentials, then call the Google Sheets API.
-  //authorize(JSON.parse(content), ledger);
-//});
+const date = require('date-and-time');
 
-/**
-* Create an OAuth2 client with the given credentials,
-* and then execute the given callback function.
-* @param {Object} credentials The authorization client credentials
-* @Param {function} callback The callback to call with the authorized client.
-*/
-function authorize(credentials, callback) {
-  const {client_secret, client_id, redirect_uris} = credentials.installed;
-  const oAuth2Client = new google.auth.OAuth2(
-    client_id, client_secret, redirect_uris[0]);
-
-  // Check if we have previously stored a token.
-  fs.readFile(TOKEN_PATH, (err, token) => {
-    if (err) return getNewToken(oAuth2Client, callback);
-    oAuth2Client.setCredentials(JSON.parse(token));
-    callback(oAuth2Client);
-  });
-}
-
-/**
- * Get and store new token after prompting for user authorization, and then
- * execute the given callback with the authorized OAuth2 client.
- * @param {google.auth.OAuth2} oAuth2Client  The OAuth2 client to get token for.
- * @param {getEventsCallback} callback The callback for the authorized client.
- */
-function getNewToken(oAuth2Client, callback) {
-  const authUrl = oAuth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: 'https://www.googleapis.com/auth/spreadsheets',
-  });
-  console.log('Authorize this app by visiting this url:', authUrl);
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-  rl.question('Enter the code from that page here: ', (code) => {
-    rl.close();
-    oAuth2Client.getToken(code, (err, token) => {
-      if (err) return console.error('Error while trying to retrieve access token', err);
-      oAuth2Client.setCredentials(token);
-      // Store the token to disk for later program executions
-      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-        if (err) return console.error(err);
-        console.log('Token stored to', TOKEN_PATH);
-      });
-      callback(oAuth2Client);
+async function testGetSpreadSheet() {
+  try {
+    const auth = await getAuthToken();
+    const response = await getSpreadsheet({
+      spreadsheetId,
+      auth
     });
-  });
+    console.log('output for getSpreadsheet', JSON.stringify(response.data, null, 2));
+  } catch (error) {
+    console.log(error.message, error.stack);
+  }
 }
 
-function pullList(auth) {
-   let Blades = [];
-   const sheets = google.sheets({version: 'v4', auth});
-   let downtimeDate = new Date();
-   console.log("Date: " + downtimeDate);
-   const downtimeDateString = downtimeDate.getFullYear() + "." + (downtimeDate.getMonth()+1).toString().padStart(2, '0') + "." + downtimeDate.getDate().toString().padStart(2, '0');
-   sheets.spreadsheets.values.get({
-     spreadsheetId: '1orT1wsZNaxR2cYrfY_bZ1dhOQFxldskdGXgSxjq5b9I',
-     range: 'Roster!C2:M',
-   }, (err, res) => {
-     if (err) return console.log("The API returned an error: " + err);
-     const rows = res.data.values;
-     if (rows.length) {
-       console.log('Name\t\tRank');
-       // Prints the columns A and E, which correspond to indices 0 and 4.
-       rows.map((row) => {
-         if (row[10] != 'Council Member') {
-           console.log(`${row[0]}, ${row[10]}`);
-           Blades.push([row[0], "0", "0", "0", "1", "0", "Downtime", "Weekly Reward: " + downtimeDateString]);
-         }
-       });
-       console.log(Blades);
-       const requestBody = { values: Blades, };
-       sheets.spreadsheets.values.append({
-         spreadsheetId: '1orT1wsZNaxR2cYrfY_bZ1dhOQFxldskdGXgSxjq5b9I',
-         range: 'Ledger!A:H',
-         valueInputOption: 'raw',
-         requestBody,
-       }, (err, res) => {
-         if (err) return console.log("The API returned an error on writing: " + err);
-         console.log("Values written");
-       });
-     } else {
-       console.log('No data found.');
-     }
-   });
-   return Blades;
+function getActiveBlades(rosterValues) {
+  let activeBlades = [];
+  for (let i=1; i<rosterValues.length; i++) {
+    if (rosterValues[i][12] != "Council Member" && rosterValues[i][12] != undefined) {
+      activeBlades.push(rosterValues[i][2]);
+    }
+  }
+  return activeBlades;
 }
 
-function ledger(auth) {
-  Blades = pullList(auth);
-  console.log(Blades);
+function buildDowntimeArray(activeBlades) {
+  // NEED something along the lines of:
+  // ["Tulizza Val'Sorren", 0, 0, 0, 1, 0, "Downtime", "Weekly Reward: TEST DATA"]
+  // for each Active Blade
+  let outArray = [];
+  let currDate = new Date();
+  for (let i=0; i<activeBlades.length; i++) {
+    outArray.push([activeBlades[i], 0, 0, 0, 1, 0, "Downtime", "Weekly Reward: " + date.format(currDate, 'YYYY.MM.DD')]);
+  }
+  console.log(outArray);
+  return outArray;
 }
 
-function main (args) {
-  // Load client secrets from a local file.
- //fs.readFile('client_secret.json', (err, content) => {
-   //if (err) return console.log('Error loading client secret file:', err);
-   // Authorise a client with credentials, then call the Google Sheets API.
-   authorize(JSON.parse(content), ledger);
- //});
-
+async function testGetSpreadSheetValues() {
+  try {
+    const auth = await getAuthToken();
+    const response = await getSpreadsheetValues({
+      spreadsheetId,
+      sheetName,
+      auth
+    });
+    console.log("Active Blades (excluding Council Members)");
+    //console.log(typeof outputStringify); // tests typeof named variable
+    //console.log(getActiveBlades(response.data["values"]));
+    let blades = getActiveBlades(response.data["values"]);
+    let downtime = buildDowntimeArray(blades);
+    testWriteSpreadsheetValues(downtime);
+  } catch (error) {
+    console.log(error.message, error.stack);
+  }
 }
 
-module.exports = {main}
+async function testWriteSpreadsheetValues(values) {
+  console.log("Trying to write data to sheet...");
+  try {
+    const auth = await getAuthToken();
+    writeSpreadsheetValues({
+      spreadsheetId,
+      sheetName,
+      auth,
+      values,
+    });
+  } catch (error) {
+    console.log(error.message, error.stack);
+  }
+}
+
+function main() {
+  testGetSpreadSheetValues();
+}
+
+main()
