@@ -84,4 +84,4 @@ function main() {
   testGetSpreadSheetValues();
 }
 
-main()
+module.exports = {main}
