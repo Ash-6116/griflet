@@ -3,6 +3,7 @@ const fs = require('fs');
 // Importing own modules here
 const output = require("./output.js"); // Gives access to HELP, MIRROR, and ARRAYMIRROR functions
 const categories = require("./categories.js"); // Gives access to RESOLVEDATE function
+const ledger = require("./ledger.js");
 
 const debug = false; // used to switch between debug mode (true) and release (false)
 
@@ -517,6 +518,7 @@ function downtime(message, args) {
       args.splice(args.indexOf('novassal'), 1); // prevents the argument ending up in the Blades announcements
     }
     if (!args.includes('-silent')) {
+      ledger.main();
       announce(message.guild.roles.cache, announcement[0], args, message.guild.channels.cache.filter(m => m.id === returnItemId(announcement[0], "announcements")), announcement[1]);
       prompt(message);
     } else {
