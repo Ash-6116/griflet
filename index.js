@@ -46,7 +46,7 @@ client.on("messageCreate", function(message) {
       if (roleTest(message)) { downtime.daily(message, args); } else { warnRole(message, 'daily'); }
       break;
     case 'downtime':
-      if (roleTest(message)) { downtime.downtime(message, args); } else { warnRole(message, 'downtime'); }
+      if (roleTest(message)) { ledger.main(args); downtime.downtime(message, args); } else { warnRole(message, 'downtime'); }
       break;
     case 'prompt':
       if (roleTest(message)) { downtime.prompt(message); } else { warnRole(message, 'prompt'); }

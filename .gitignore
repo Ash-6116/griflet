@@ -13,3 +13,7 @@ cheatsheet.txt
 heroku-recovery-codes.txt
 google-credentials.json
 downtime.js.save.*
+google_key.json
+ledger.js
+credentials.json
+service_account_credentials.json
