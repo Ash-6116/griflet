@@ -32,11 +32,12 @@ async function getSpreadsheetValues({spreadsheetId, auth, sheetName}) {
   return res;
 }
 
-async function writeSpreadsheetValues({spreadsheetId, auth, values}) {
+async function writeSpreadsheetValues({spreadsheetId, auth, values, range}) {
   await sheets.spreadsheets.values.append({
     spreadsheetId,
     auth,
-    range: "Ledger",
+    //range: "Ledger",
+    range,
     valueInputOption: "USER_ENTERED",
     resource: {
       values,

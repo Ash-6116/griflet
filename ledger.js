@@ -5,12 +5,13 @@ const {
   writeSpreadsheetValues
 } = require ('./googleSheetsService.js');
 
-const spreadsheetId = '1orT1wsZNaxR2cYrfY_bZ1dhOQFxldskdGXgSxjq5b9I'; // Id goes here
-const sheetName = 'Roster'; // Sheet name goes here
+//const spreadsheetId = '1orT1wsZNaxR2cYrfY_bZ1dhOQFxldskdGXgSxjq5b9I'; // Id goes here - change to envVariable or argument
+//const sheetName = 'Roster'; // Sheet name goes here
+//const range = 'Ledger'
 
 const date = require('date-and-time');
 
-async function testGetSpreadSheet() {
+async function testGetSpreadSheet(spreadsheetId) {
   try {
     const auth = await getAuthToken();
     const response = await getSpreadsheet({
@@ -46,7 +47,7 @@ function buildDowntimeArray(activeBlades) {
   return outArray;
 }
 
-async function testGetSpreadSheetValues() {
+async function testGetSpreadSheetValues(spreadsheetId, sheetName) {
   try {
     const auth = await getAuthToken();
     const response = await getSpreadsheetValues({
@@ -56,16 +57,15 @@ async function testGetSpreadSheetValues() {
     });
     console.log("Active Blades (excluding Council Members)");
     //console.log(typeof outputStringify); // tests typeof named variable
-    //console.log(getActiveBlades(response.data["values"]));
     let blades = getActiveBlades(response.data["values"]);
     let downtime = buildDowntimeArray(blades);
-    testWriteSpreadsheetValues(downtime);
+    testWriteSpreadsheetValues(spreadsheetId, sheetName, downtime, process.env.range);
   } catch (error) {
     console.log(error.message, error.stack);
   }
 }
 
-async function testWriteSpreadsheetValues(values) {
+async function testWriteSpreadsheetValues(spreadsheetId, sheetName, values, range) {
   console.log("Trying to write data to sheet...");
   try {
     const auth = await getAuthToken();
@@ -74,6 +74,7 @@ async function testWriteSpreadsheetValues(values) {
       sheetName,
       auth,
       values,
+      range,
     });
   } catch (error) {
     console.log(error.message, error.stack);
@@ -81,7 +82,7 @@ async function testWriteSpreadsheetValues(values) {
 }
 
 function main() {
-  testGetSpreadSheetValues();
+  testGetSpreadSheetValues(process.env.spreadsheetId, process.env.sheetName);
 }
 
 module.exports = {main}
