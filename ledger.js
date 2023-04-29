@@ -76,6 +76,7 @@ async function testWriteSpreadsheetValues(spreadsheetId, sheetName, values, rang
       values,
       range,
     });
+    console.log("Data written to sheet.");
   } catch (error) {
     console.log(error.message, error.stack);
   }
