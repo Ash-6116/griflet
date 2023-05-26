@@ -1,69 +1,44 @@
-const Discord = require("discord.js");
-const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
-const prefix = "!";
+const fs = require('node:fs');
+const path = require('node:path');
+const {Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 
-// Importing own modules here
-const categories = require("./categories.js");
-const downtime = require("./downtime.js");
-const output = require("./output.js");
-const ledger = require("./ledger.js");
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] }); // Create a new client instance
+client.cooldowns = new Collection();
+client.commands = new Collection(); // Load command files
 
-function ping(message) {
-  const timeTaken = Date.now() - message.createdTimestamp;
-  mirror(`Pong! This message has a latency of ${timeTaken}ms.`, message);
-  return;
+const foldersPath = path.join(__dirname, 'commands');
+const commandFolders = fs.readdirSync(foldersPath);
+
+for (const folder of commandFolders) {
+  const commandsPath = path.join(foldersPath, folder);
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+  for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+    // Set a new item in the Collection with the key as the command name and the value as the exported module
+    if ('data' in command && 'execute' in command) {
+      client.commands.set(command.data.name, command);
+    } else {
+      console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+    }
+  }
 }
 
-function roleTest(message) {
-  // this function checks a user has a specific role - used for restricting commands on Castle In The Mist server
-  if (message.member.roles.cache.some(role => role.name === 'Knights') || message.member.roles.cache.some(role => role.name === 'Squires') || message.member.roles.cache.some(role => role.name === 'Baroness')) {
-    console.log("User has the Knights role, the Squires role, or the Baroness role");
-    return true;
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+
+for (const file of eventFiles) {
+  const filePath = path.join(eventsPath, file);
+  const event = require(filePath);
+  if (event.once) {
+    client.once(event.name, (...args) => event.execute(...args));
   } else {
-    console.log("User does not have an applicable role");
-    return false;
+    client.on(event.name, (...args) => event.execute(...args));
   }
 }
 
-function warnRole(message, command) {
-  output.mirror("Unfortunately, the command **" + command + "** is not available at this time.  It is currently restricted to Knights, Squires, or the Baroness.", message);
-  return;
-}
+// Importing own modules here - TO BE RETIRED
+const downtime = require("./downtime.js");
 
-client.on("messageCreate", function(message) {
-  if (message.author.bot) return;
-  if (!message.content.startsWith(prefix)) return;
-
-  const commandBody = message.content.slice(prefix.length);
-  const args = commandBody.split(' ');
-  const command = args.shift().toLowerCase();
-
-  switch (command) {
-    case 'categories':
-      if (roleTest(message)) { categories.categoryList(message); } else { warnRole(message, 'categories'); }
-      break;
-    case 'daily':
-      if (roleTest(message)) { downtime.daily(message, args); } else { warnRole(message, 'daily'); }
-      break;
-    case 'downtime':
-      if (roleTest(message)) { downtime.downtime(message, args); } else { warnRole(message, 'downtime'); }
-      break;
-    case 'prompt':
-      if (roleTest(message)) { downtime.prompt(message); } else { warnRole(message, 'prompt'); }
-      break;
-    case 'ping':
-      ping(message);
-      break;
-   case 'ledger':
-     if (roleTest(message)) { ledger.main(args); } else { warnRole(message, 'ledger'); }
-     break;
-   case 'griflet':
-      output.mirror(output.help(), message);
-      break;
-    default:
-      break;
-  }
-});
-
-client.login(process.env.GRIFLET_TOKEN); // COMMENT OUT IN DEV BUILDS
-console.log("System Ready...");
+client.login(process.env.GRIFLET_TOKEN);
