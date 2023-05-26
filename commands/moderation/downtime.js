@@ -429,7 +429,7 @@ async function processReactions(questsWithReactions) {
 }
 
 function errorCheckFilledQuests(validReactions) {
-  const filledQuestNumber = 1; // 1 or 2 for debug, 4 for release
+  const filledQuestNumber = 4; // 1 or 2 for debug, 4 for release
   /**
    *  Need to filter the valid quests into groups:
    *  1)  Filled quests, where the total number of reactions is 4
