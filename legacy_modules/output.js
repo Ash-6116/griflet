@@ -39,16 +39,4 @@ function arrayMirror(array, message) {
   return;
 }
 
-function help() {
-  // need to replace this with a read from text file in time
-  let outputString = "";
-  outputString += "Griflet commands:\n";
-  outputString += "!categories\n\tList out the last message times and authors.\n";
-  outputString += "!daily\n\tRun all of the downtime routine *__except__* for announcing to the Blades - used to create a daily log of quests filling up and reminding vassals of quests waiting for DM.\n";
-  outputString += "!downtime\n\tRun the Downtime routine for Castle In The Mist Discord server.\n";
-  outputString += "!ping\n\tRun the ping command.\n";
-  outputString += "\nNote: the -silent flag can be added to !daily or !downtime to have those commands run silent, logging only to #bot-stuff in the council-lounge, without notifying either Blades (via #announcements) or Vassals (via #briefing-room).";
-  return outputString;
-}
-
-module.exports = {help, mirror, arrayMirror, specificMirror}
+module.exports = {mirror, arrayMirror, specificMirror}

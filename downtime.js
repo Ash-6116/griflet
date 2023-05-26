@@ -1,8 +1,9 @@
 
 const fs = require('fs');
 // Importing own modules here
-const output = require("./output.js"); // Gives access to HELP, MIRROR, and ARRAYMIRROR functions
-const categories = require("./categories.js"); // Gives access to RESOLVEDATE function
+//const output = require("./output.js"); // Gives access to HELP, MIRROR, and ARRAYMIRROR functions
+//const categories = require("./categories.js"); // Gives access to RESOLVEDATE function
+//const categories = require("./commands/moderation/categories.js"); // Gives access to RESOLVEDATE function
 const ledger = require("./ledger.js");
 
 const debug = false; // used to switch between debug mode (true) and release (false)
