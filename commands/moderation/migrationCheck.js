@@ -12,12 +12,14 @@ module.exports = {
     console.log(bladesKey);
     const blades = users.filter(user => user._roles.includes(bladesKey));
     const bladesKeys = Array.from(blades.keys());
-    let migratory = [];
+    let migratory = [], nonMigratory = [];
     bladesKeys.forEach(key => {
       const blade = blades.get(key).user;
       console.log(blade);
       if (blade.discriminator === undefined || blade.discriminator === "0") {
         migratory.push(blade.username);
+      } else {
+        nonMigratory.push(blade.username + "#" + blade.discriminator);
       }
     });
     let output = "__**Blades Who Have Migrated From Discriminators:**__\n";
@@ -25,6 +27,13 @@ module.exports = {
       output += user + "\n";
     });
     if (migratory.length === 0) {
+      output += "None";
+    }
+    output += "__**Blades Who Have Not Migrated From Discriminators:**__\n";
+    nonMigratory.forEach(user => {
+      output += user + "\n";
+    });
+    if (nonMigratory.length === 0) {
       output += "None";
     }
     interaction.editReply(output);
