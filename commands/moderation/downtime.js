@@ -714,7 +714,7 @@ function prompt(usableChannels) { // TO DO - alter so that it will only post if 
       return console.log(err);
     }
     var array = data.toString().split("\n");
-    specificMirror([standard + array[Math.floor(Math.random() * array.length-1)]], confessional);
+    specificMirror([standard + array[Math.floor(Math.random() * (array.length-1))]], confessional);
   });
   return;
 }
