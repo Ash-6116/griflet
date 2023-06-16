@@ -22,14 +22,14 @@ module.exports = {
         nonMigratory.push(blade.username + "#" + blade.discriminator);
       }
     });
-    let output = "__**Blades Who Have Migrated From Discriminators:**__\n";
+    let output = "__**" + migratory.length + " Blades Who Have Migrated From Discriminators:**__\n";
     migratory.forEach(user => {
       output += user + "\n";
     });
     if (migratory.length === 0) {
       output += "None";
     }
-    output += "__**Blades Who Have Not Migrated From Discriminators:**__\n";
+    output += "__**" + nonMigratory.length + " Blades Who Have Not Migrated From Discriminators:**__\n";
     nonMigratory.forEach(user => {
       output += user + "\n";
     });
