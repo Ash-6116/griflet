@@ -114,6 +114,11 @@ function councilAlert(alerts, council) {
    * 5. quests waiting for vassals
    * 6. the roster list
   **/
+
+  /** 2023.08
+   *
+   * Will be reformatting this function to include a prompt so that announcements can be checked for accuracy here, then pushed to the Blades/Vassals as appropriate, with the default option being to run silently.
+  **/
   const debugQuest = "Tier: 0 - Debug Quest";
   const rosters = alerts.pop(), vassalsWaiting = alerts.pop(), bladesWaiting = alerts.pop(), emptyCaravans = alerts.pop(), runningCaravans = alerts.pop(), reactions = alerts.pop(); // separating the output back out
   let outputString = "";

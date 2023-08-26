@@ -11,6 +11,13 @@ Over time, Griflet has grown to encompass more administrative tasks for the D&D 
 - Output.js - contains functions to ensure output from other modules can be written to both the bot's output console and to Discord.
 - Prompts.txt - a set of prompts for the D&D Roleplay Server, with Griflet selecting one at random during performance of the Downtime routine and sending it to the Discord server.
 
+Future work will include:
+- Modifying Downtime so that it will show a 'preview' of announcements and then ask for permission to post them, eliminating the need to run it twice with the -silent option to check for accuracy first
+- Checking all modules to ensure that .filter methods are used where appropriate to cut down on large code blocks that only perform filtering
+- More frequent use of comments
+- More automation in terms of prompting Blades about activity on the second Sunday of every month.
+- Checking that Prompts are not repeated from the previous week
+
 Griflet is licensed under the Internet Software Consortium (ISC) license.  It is open-source, and can be copied, modified and reused for free for either private or commercial use, so long as it carries the copyright notice found in the LICENSE.md file or at the bottom of this README.  Meaning that Griflet's code can be customised for any Discord server by anyone who wishes to do so.
 
 Copyright (c) 2021, Ash#6116

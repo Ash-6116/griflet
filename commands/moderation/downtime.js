@@ -294,6 +294,11 @@ function v14councilAlert(alertPackage, usableChannels) { // change to use output
    * Going to be receiving a JSON object containing the alerts, rather than the old array.
    * Each key is going to be describing the element in question.
   **/
+  /**
+   * 2023.08
+   *
+   * Going to be changing parts of this to require a prompt so that downtime does not have to be run twice with a -silent argument to check accuracy of output
+  **/
   console.log(alertPackage);
   // 1st, lets deal with the roster (these should only trigger if they are in the alert package!!!
   let roster, caravans, reactions, emptyCaravans, filledCaravans;
@@ -706,7 +711,7 @@ function errorCheckUsersHaveRole(runningCaravansWithUsers, blades, caravanRoles)
   return alerts;
 }
 
-function prompt(usableChannels) { // TO DO - alter so that it will only post if the last post wasn't sent by Griflet
+function prompt(usableChannels) { // TO DO - alter so that it will only post if the last post wasn't sent by Griflet, also check content isn't the same as the previous weeks
   const confessional = usableChannels.find(channel => channel.name === "blades-confessionals"),
     standard = "You can describe your character's answer to the following prompt either in character as them or out of character describing it yourself.  Please remember to keep things civil, even here you are under the watchful eye of the council and the rules for both Blades and the server as a whole still apply.  For the sake of making it clear which character the confession goes with, please use the following format: `**Name of character**: [answer]`\n\n";
     fs.readFile('prompts.txt', 'utf8', (err, data) => {
@@ -1031,12 +1036,12 @@ module.exports = {
             case ("no prompt"):
               routineAnnouncement(alertsDividedIntoGroups, usableRoles, usableChannels, messageForBlades);
               routineVassalsAnnouncement(alertsDividedIntoGroups, usableRoles, usableChannels);
-              ledger.main();
+              ledger.main(process.env.spreadsheetId, "Roster");
               break;
             case ("no vassals"):
               routineAnnouncement(alertsDividedIntoGroups, usableRoles, usableChannels, messageForBlades);
               prompt(usableChannels);
-              ledger.main();
+              ledger.main(process.env.spreadsheetId, "Roster");
               break;
             case ("no ledger"):
               prompt(usableChannels);
@@ -1051,7 +1056,7 @@ module.exports = {
           prompt(usableChannels);
           routineAnnouncement(alertsDividedIntoGroups, usableRoles, usableChannels, messageForBlades);
           routineVassalsAnnouncement(alertsDividedIntoGroups, usableRoles, usableChannels);
-          ledger.main();
+          ledger.main(process.env.spreadsheetId, "Roster");
         }
       }
     } else {

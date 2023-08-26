@@ -1,4 +1,3 @@
-// googleSheetsService.js
 const {google} = require('googleapis');
 const sheets = google.sheets('v4');
 const path = require('path');
@@ -6,7 +5,6 @@ const path = require('path');
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 const GCLOUD_PROJECT = process.env.GCLOUD_PROJECT;
-//const GCLOUD_PROJECT = 'warm-composite-329019';
 async function getAuthToken() {
   const auth = new google.auth.GoogleAuth({
     scopes: SCOPES
@@ -36,7 +34,6 @@ async function writeSpreadsheetValues({spreadsheetId, auth, values, range}) {
   await sheets.spreadsheets.values.append({
     spreadsheetId,
     auth,
-    //range: "Ledger",
     range,
     valueInputOption: "USER_ENTERED",
     resource: {

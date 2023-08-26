@@ -5,10 +5,6 @@ const {
   writeSpreadsheetValues
 } = require ('./googleSheetsService.js');
 
-//const spreadsheetId = '1orT1wsZNaxR2cYrfY_bZ1dhOQFxldskdGXgSxjq5b9I'; // Id goes here - change to envVariable or argument
-//const sheetName = 'Roster'; // Sheet name goes here
-//const range = 'Ledger'
-
 const date = require('date-and-time');
 
 async function testGetSpreadSheet(spreadsheetId) {
@@ -59,14 +55,15 @@ async function testGetSpreadSheetValues(spreadsheetId, sheetName) {
     //console.log(typeof outputStringify); // tests typeof named variable
     let blades = getActiveBlades(response.data["values"]);
     let downtime = buildDowntimeArray(blades);
-    testWriteSpreadsheetValues(spreadsheetId, sheetName, downtime, process.env.range);
+    testWriteSpreadsheetValues(spreadsheetId, "Ledger", downtime);
   } catch (error) {
     console.log(error.message, error.stack);
   }
 }
 
-async function testWriteSpreadsheetValues(spreadsheetId, sheetName, values, range) {
+async function testWriteSpreadsheetValues(spreadsheetId, sheetName, values) {
   console.log("Trying to write data to sheet...");
+  let range = sheetName+"!A:H";
   try {
     const auth = await getAuthToken();
     writeSpreadsheetValues({
@@ -74,7 +71,7 @@ async function testWriteSpreadsheetValues(spreadsheetId, sheetName, values, rang
       sheetName,
       auth,
       values,
-      range,
+      range
     });
     console.log("Data written to sheet.");
   } catch (error) {
@@ -82,8 +79,8 @@ async function testWriteSpreadsheetValues(spreadsheetId, sheetName, values, rang
   }
 }
 
-function main() {
-  testGetSpreadSheetValues(process.env.spreadsheetId, process.env.sheetName);
+function main(spreadsheetId, sheetName) {
+  testGetSpreadSheetValues(spreadsheetId, sheetName);
 }
 
 module.exports = {main}
