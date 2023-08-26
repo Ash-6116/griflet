@@ -38,7 +38,4 @@ for (const file of eventFiles) {
   }
 }
 
-// Importing own modules here - TO BE RETIRED
-const downtime = require("./downtime.js");
-
 client.login(process.env.GRIFLET_TOKEN);
