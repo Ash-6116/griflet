@@ -94,6 +94,7 @@ async function getData(blade) {
 }
 
 async function writeToLedger(values) {
+  console.log(values);
   console.log("Trying to write data to sheet...");
   const spreadsheetId = process.env.spreadsheetId;
   const sheetName = "Ledger";
@@ -129,7 +130,7 @@ async function getAllSpreadsheetValues(spreadsheetId, sheetName) {
   return; 
 }
 
-function constructViewOutput(bladesData) {
+function constructViewOutput(bladesData, player) {
   let outputString = "";
   bladesData.forEach(bladeData => {
     outputString += bladeData[2] + "\n";
@@ -158,6 +159,7 @@ function constructViewOutput(bladesData) {
       outputString += "Null";
     }
     outputString += "\n";
+    outputString += "<@" + Array.from(player.keys())[0] + ">\n";
   });
   return outputString;
 }
@@ -248,6 +250,7 @@ async function collectOneBlade(blades, interaction) { // need to prompt the user
 }
 
 async function downtimeSpend(interaction) {
+  const users = await interaction.guild.members.fetch();
   const blade = interaction.options.getString('blade'),
     mode = interaction.options.getString('mode');
   console.log(interaction.options);
@@ -279,7 +282,8 @@ async function downtimeSpend(interaction) {
       }
       break;
     case ("VIEW"):
-      output = constructViewOutput(bladeData);
+      let player = users.filter(guildmember => guildmember.user.username === bladeData[0][0].substring(1));
+      output = constructViewOutput(bladeData, player);
       interaction.followUp(output);
       break;
     default:
