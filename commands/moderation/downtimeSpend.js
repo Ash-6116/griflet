@@ -141,8 +141,8 @@ function constructViewOutput(bladesData, player) {
     if (bladeData[6] != 'N/A') {
       outputString += "/" + bladeData[6];
     }
-    if (bladeData[5] != 'N/A' || bladeData[6] != 'N/A') { // omits printing total level field if character is a multiclass
-      outputString == "*\n";
+    if ((bladeData[5] != 'N/A') || (bladeData[6] != 'N/A')) { // omits printing total level field if character is a multiclass
+      outputString += "*\n";
     } else {
       outputString += " " + bladeData[1] + "*\n";
     }
