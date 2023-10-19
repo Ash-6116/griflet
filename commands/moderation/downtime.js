@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('discord.js'),
   fs = require('fs'),
   roleTest = require('../snippets/roleTest'),
   ledger = require('../../ledger.js'),
+  { prompter } = require('./downtimeSpend.js'), // Gives access to the prompter function
   { testUser } = require('../snippets/user'),
   { mirror, specificMirror } = require('../snippets/output'),
   { resolveDate } = require('./categories.js'); // Gives access to RESOLVEDATE function
@@ -289,22 +290,20 @@ function addToOutput(outputString, addendum, finalOutput) {
   return [finalOutput, outputString];
 }
 
-function v14councilAlert(alertPackage, usableChannels) { // change to use outputSpecificMirror NOT interaction
+async function v14councilAlert(alertPackage, usableChannels, interaction) { // change to use outputSpecificMirror NOT interaction
   /**
    * Going to be receiving a JSON object containing the alerts, rather than the old array.
    * Each key is going to be describing the element in question.
   **/
-  /**
-   * 2023.08
-   *
-   * Going to be changing parts of this to require a prompt so that downtime does not have to be run twice with a -silent argument to check accuracy of output
-  **/
-  console.log(alertPackage);
   // 1st, lets deal with the roster (these should only trigger if they are in the alert package!!!
-  let roster, caravans, reactions, emptyCaravans, filledCaravans;
+  let roster, caravans, reactions, emptyCaravans, filledCaravans, alertsAllGroups, invalidReactions, missingUsers, questAlerts;
   if (alertPackage.has("roster")) { roster = alertPackage.get("roster")}
   if (alertPackage.has("caravans")) { caravans = alertPackage.get("caravans"), emptyCaravans = caravans[0], filledCaravans = caravans[1]}
   if (alertPackage.has("reactions")) { reactions = alertPackage.get("reactions")}
+  if (alertPackage.has("alertsAllGroups")) { alertsAllGroups = alertPackage.get("alertsAllGroups")}
+  if (alertPackage.has("invalid reactions")) { invalidReactions = alertPackage.get("invalid reactions")}
+  if (alertPackage.has("missing users")) { missingUsers = alertPackage.get("missing users")}
+  if (alertPackage.has("quest alerts")) { questAlerts = alertPackage.get("quest alerts")}
   let outputString = "",
     finalOutput = [],
     temp = [];
@@ -329,7 +328,29 @@ function v14councilAlert(alertPackage, usableChannels) { // change to use output
     outputString = temp[1];
   }
   // 2nd, show the quests waiting for Blades
+  if (alertsAllGroups != null) {
+  	if (alertsAllGroups.has("blades")) {
+  		let bladesString = "__**Quests Waiting For Blades**__\n";
+  		Array.from(alertsAllGroups.get("blades").keys()).forEach(quest => {
+  			bladesString += quest + "\n";
+  		});
+  		temp = addToOutput(outputString, bladesString, finalOutput);
+  		finalOutput = temp[0];
+  		outputString = temp[1];
+  	}
+  }
   // 3rd, show the quests waiting for Vassals
+  if (alertsAllGroups != null) {
+  	if (alertsAllGroups.has("vassals")) {
+  		let vassalString = "__**Quests Waiting For Vassals**__\n";
+  		Array.from(alertsAllGroups.get("vassals").keys()).forEach(quest => {
+  			vassalString += quest + "\n";
+  		});
+  		temp = addToOutput(outputString, vassalString, finalOutput);
+  		finalOutput = temp[0];
+  		outputString = temp[1];
+  	}
+  }
   // 4th, show all the reacted quests - including invalid reactions
   if (reactions != null) {
     const questsWithReactions = Array.from(reactions.keys());
@@ -347,10 +368,27 @@ function v14councilAlert(alertPackage, usableChannels) { // change to use output
     outputString = temp[1];
   }
   // 5th, show the filled caravans
-  if (filledCaravans != null) {
+  if (filledCaravans != null) { // should this be replaced with runningCaravans?
     let filledString = "__**Filled Caravans**__\n";
     filledCaravans.forEach(caravan => {
-      filledString += caravan[0] + ":" + caravan[1] + "\nDM: " + caravan[2] + "\tDate Started: " + caravan[3] + "\n";
+      filledString += caravan[0] + ": " + caravan[1] + "\nDM: " + caravan[2] + "\tDate Started: " + caravan[3] + "\n";
+      if (alertsAllGroups != null) {
+      	if (alertsAllGroups.has("running")) {
+      		filledString += "Blades: ";
+      		players = alertsAllGroups.get("running").get(caravan[1]);
+      		players.get("blades").forEach(blade => {
+      			filledString += blade.username + " ";
+      		});
+      		if (players.has("arrows")) {
+      			filledString += "\nArrows: ";
+      			players.get("arrows").forEach(arrow => {
+      				filledString += arrow.username + " ";
+      			});
+      		}
+      		console.log(alertsAllGroups.get("running").get(caravan[1]));
+      		filledString += "\n";
+      	}
+      }
     });
     temp = addToOutput(outputString, filledString, finalOutput);
     finalOutput = temp[0];
@@ -371,8 +409,8 @@ function v14councilAlert(alertPackage, usableChannels) { // change to use output
    *  These could be anything from a missing role
    *  to a Blade that left a reaction leaving the server
   **/
-  if (alertPackage.has("missing users")) {
-    const missingUsers = alertPackage.get("missing users");
+  if (missingUsers != null) {
+    //const missingUsers = alertPackage.get("missing users");
     let missingString = "__**Missing Users**__\n*The following reactions were left by someone no longer on the server*\n";
     const questArray = Array.from(missingUsers.keys());
     questArray.forEach(key => {
@@ -391,6 +429,17 @@ function v14councilAlert(alertPackage, usableChannels) { // change to use output
     finalOutput = temp[0];
     outputString = temp[1];
   }
+  if (invalidReactions != null) {
+  	console.log("invalids:");
+  	console.log(invalidReactions);
+  }
+  if (questAlerts != null) {
+  	console.log("alerts:");
+  	console.log(questAlerts);
+  }
+  if (alertsAllGroups != null) {
+  	console.log(alertsAllGroups); // this contains the running information
+  }
   /**
   if (alertPackage.has("alertsAllGroups"alertsAllGroups.has("council")) {
     console.log("Quest Alerts:");
@@ -402,7 +451,23 @@ function v14councilAlert(alertPackage, usableChannels) { // change to use output
     finalOutput.push(outputString);
     specificMirror(finalOutput, usableChannels.find(channel => channel.name === "bot-stuff"));
   }
-  return;
+  await new Promise(resolve => setTimeout(resolve, 1000)); // waiting 1 second to give Discord a chance to refresh
+  interaction.followUp("Would you like to run the whole announcement routine, or only have output in bot-stuff as a log?  Y/N");
+  // should return TRUE if a reply is received within 1 minute to indicate the announcements can go ahead, FALSE if the timer runs out or if the reply is NO.
+  let collection = await prompter(60000, interaction);
+  console.log(collection);
+  if (collection != null) {
+  	if (isNaN(collection) && collection.toLowerCase().includes("y")) {
+		interaction.followUp("Alerts selected, announcement routines will run shortly.");
+  		return true;
+  	} else {
+  		interaction.followUp("No alerts selected, no announcement routines will run.");
+  		return false;
+  	}
+  } else {
+  	interaction.followUp("Request timed out, if you wish to run announcements routines, please rerun the /downtime command.");
+  	return false;
+  }
 }
 
 async function processReactions(questsWithReactions) {
@@ -996,7 +1061,7 @@ module.exports = {
           case ("roster"):
             interaction.editReply("Checking roster...");
             councilAlerts = routineCouncilAlertsRosterOnly(rosterOutput); // move 'there are no sheets' to councilAlerts
-            v14councilAlert(councilAlerts, usableChannels);
+            v14councilAlert(councilAlerts, usableChannels, interaction); // adjust to handle asking for NO OUTPUT
             break;
           case ("prompt"):
             interaction.editReply("Sending prompt to Blades...");
@@ -1005,7 +1070,7 @@ module.exports = {
           case ("council"):
             interaction.editReply("Sending alerts to council...");
             councilAlerts = routineCouncilAlertsSetup(alertsDividedIntoGroups, sortCaravans(caravans), invalidReactions, userExistsResults, reactionsSortedIntoFilled, rosterOutput, reactionsData);
-            v14councilAlert(councilAlerts, usableChannels);
+            v14councilAlert(councilAlerts, usableChannels, interaction); // adjust to handle asking for NO OUTPUT
             break;
           case ("ledger"):
             interaction.editReply("Sending Data to Ledger...");
@@ -1014,8 +1079,10 @@ module.exports = {
             interaction.editReply("Running Daily routine...");
             // same as council but also with a vassals alert
             councilAlerts = routineCouncilAlertsSetup(alertsDividedIntoGroups, sortCaravans(caravans), invalidReactions, userExistsResults, reactionsSortedIntoFilled, rosterOutput, reactionsData);
-            v14councilAlert(councilAlerts, usableChannels);
-            routineVassalsAnnouncement(alertsDividedIntoGroups, usableRoles, usableChannels);
+            councilResponse = await v14councilAlert(councilAlerts, usableChannels, interaction); // adjust to handle asking for NO OUTPUT
+	    if (councilResponse) {
+            	routineVassalsAnnouncement(alertsDividedIntoGroups, usableRoles, usableChannels);
+	    }
             break;
           case ("announce"):
             interaction.editReply("Sending announcement to Blades...");
@@ -1027,8 +1094,8 @@ module.exports = {
         }
       } else { // routine has not been set, so run the whole routine's output
         councilAlerts = routineCouncilAlertsSetup(alertsDividedIntoGroups, sortCaravans(caravans), invalidReactions, userExistsResults, reactionsSortedIntoFilled, rosterOutput, reactionsData);
-        v14councilAlert(councilAlerts, usableChannels);
-        if (options != null) {
+        councilResponse = await v14councilAlert(councilAlerts, usableChannels, interaction);
+        if (options != null && councilResponse) {
           switch (options) {
             case ("silent"):
               interaction.editReply("The silent option was passed, announcements will not trigger");
@@ -1052,11 +1119,13 @@ module.exports = {
               interaction.followUp("I'm sorry, I do not recognise the option " + options);
               break;
           }
-        } else {
+        } else if (options == null && councilResponse) { // should trigger if no options received and councilResponse is YES
           prompt(usableChannels);
           routineAnnouncement(alertsDividedIntoGroups, usableRoles, usableChannels, messageForBlades);
           routineVassalsAnnouncement(alertsDividedIntoGroups, usableRoles, usableChannels);
           ledger.main(process.env.spreadsheetId, "Roster");
+        } else if (!councilResponse) { // councilResponse was negative
+        	interaction.editReply("Continuing weekly downtime announcements declined by council");
         }
       }
     } else {
