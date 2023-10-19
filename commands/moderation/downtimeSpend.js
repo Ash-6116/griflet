@@ -325,5 +325,5 @@ module.exports = {
     } else {
       roleTest.warnRole(interaction, "downtime_spending");
     }
-  },
+  }, prompter
 };
