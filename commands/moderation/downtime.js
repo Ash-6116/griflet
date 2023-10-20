@@ -377,12 +377,12 @@ async function v14councilAlert(alertPackage, usableChannels, interaction) { // c
       		filledString += "Blades: ";
       		players = alertsAllGroups.get("running").get(caravan[1]);
       		players.get("blades").forEach(blade => {
-      			filledString += blade.username + " ";
+      			filledString += "<@" + blade.id + "> | ";
       		});
       		if (players.has("arrows")) {
       			filledString += "\nArrows: ";
       			players.get("arrows").forEach(arrow => {
-      				filledString += arrow.username + " ";
+      				filledString += "<@" + arrow.id + "> | ";
       			});
       		}
       		console.log(alertsAllGroups.get("running").get(caravan[1]));
