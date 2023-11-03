@@ -455,6 +455,7 @@ async function v14councilAlert(alertPackage, usableChannels, interaction) { // c
   await new Promise(resolve => setTimeout(resolve, 1000)); // waiting 1 second to give Discord a chance to refresh
   interaction.followUp("Would you like to run the whole announcement routine, or only have output in bot-stuff as a log?  Y/N");
   // should return TRUE if a reply is received within 1 minute to indicate the announcements can go ahead, FALSE if the timer runs out or if the reply is NO.
+  await new Promise(resolve => setTimeout(resolve, 1000));
   let collection = await prompter(60000, interaction);
   console.log(collection);
   if (collection != null) {
