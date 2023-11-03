@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js'),
   roleTest = require('../snippets/roleTest'),
+  { prompter } = require('../snippets/prompter'),
   { getAuthToken, getSpreadsheet, getSpreadsheetValues, writeSpreadsheetValues } = require('../../googleSheetsService.js');
 
 function calculateGains(reward, notes, blade, interaction) {
@@ -209,6 +210,7 @@ async function checkForLevelling(bladeData) {
   return notification;
 }
 
+/**
 async function prompter(timeLimit, interaction) { // this collects a user's reply after a prompt
   console.log("Awaiting prompt response...");
   return new Promise (function (resolve, reject) {
@@ -224,6 +226,7 @@ async function prompter(timeLimit, interaction) { // this collects a user's repl
       });
   });
 }
+**/
 
 async function collectOneBlade(blades, interaction) { // need to prompt the user to select ONE Blade
   let timeLimit = 60*1000, tries = 3, invalidRemains = true;

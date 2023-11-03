@@ -1,9 +1,8 @@
 async function prompter(timeLimit, interaction) {
 	console.log("Awaiting prompt response from " + interaction.user.username + "...");
 	return new Promise (function (resolve, reject) {
-		//const collectorFilter = m => m.author.id == interaction.user.id,
-			//collector = interaction.channel.awaitMessages({ filter: collectorFilter, time: timeLimit, max: 1})
-			collector = interaction.channel.awaitMessages({ time: timeLimit, max: 1 })
+		const collectorFilter = m => m.author.id == interaction.user.id,
+			collector = interaction.channel.awaitMessages({ filter: collectorFilter, time: timeLimit, max: 1})
 			.then(collected => {
 				console.log("Response received:");
 				console.log(collected);
