@@ -9,7 +9,7 @@ function testUser(user) {
     if (user.discriminator != 0) {
       return user.username + "#" + user.discriminator;
     } else {
-      console.log("This discriminator has migrated! " + user.discriminator);
+      console.log("This discriminator has migrated! " + user.username + "#" + user.discriminator);
       return user.username;
     }
   } else {

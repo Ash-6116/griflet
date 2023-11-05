@@ -2,8 +2,7 @@ const { SlashCommandBuilder } = require('discord.js'),
   fs = require('fs'),
   roleTest = require('../snippets/roleTest'),
   ledger = require('../../ledger.js'),
-  //{ prompter } = require('./downtimeSpend.js'), // Gives access to the prompter function
-  { prompter } = require('../snippets/prompter'),
+  { prompter } = require('./downtimeSpend.js'), // Gives access to the prompter function
   { testUser } = require('../snippets/user'),
   { mirror, specificMirror } = require('../snippets/output'),
   { resolveDate } = require('./categories.js'); // Gives access to RESOLVEDATE function
@@ -149,7 +148,6 @@ function sortQuests(questArray) { // works with v14 and requires no overhaul
 async function pinnedCaravans(cache) {
   const categoryList = Array.from( cache.keys() );
   for (let index = 0; index < cache.size; index++) {
-    //let children = cache.get(categoryList[index]).children; // this doesn't exist anymore!!!
     let childrenResult = children(cache.get(categoryList[index]));
     const channels = [], childList = Array.from(childrenResult.keys());
     for(let c = 0; c < childrenResult.size; c++) {
@@ -377,16 +375,32 @@ async function v14councilAlert(alertPackage, usableChannels, interaction) { // c
       	if (alertsAllGroups.has("running")) {
       		filledString += "Blades: ";
       		players = alertsAllGroups.get("running").get(caravan[1]);
-      		players.get("blades").forEach(blade => {
-      			filledString += "<@" + blade.id + "> | ";
-      		});
-      		if (players.has("arrows")) {
-      			filledString += "\nArrows: ";
-      			players.get("arrows").forEach(arrow => {
-      				filledString += "<@" + arrow.id + "> | ";
+      		if (players != undefined) { // quest threw up an error for at least 1 player, need to get it from council alerts group
+      			players.get("blades").forEach(blade => {
+      				filledString += "<@" + blade.id + "> | ";
       			});
+      			if (players.has("arrows")) {
+      				filledString += "\nArrows: ";
+      				players.get("arrows").forEach(arrow => {
+      					filledString += "<@" + arrow.id + "> | ";
+      				});
+      			}
+      		} else {
+      			console.error("Oops, something went wrong with: " + caravan[1]);
+      			// There may have been an alert involving this caravan, so need to get its Blades another way!!!
+      			if (alertsAllGroups.has("council")) {
+      				players = alertsAllGroups.get("council").get(caravan[1]);
+      				players.get("blades").forEach(blade => {
+      					filledString += "<@" + blade.id + "> | ";
+      				});
+      				if (players.has("arrows")) {
+      					filledString += "\nArrows: ";
+      					players.get("arrows").forEach(arrow => {
+      						filledString += "<@" + arrow.id + "> |";
+      					});
+      				}
+      			}
       		}
-      		console.log(alertsAllGroups.get("running").get(caravan[1]));
       		filledString += "\n";
       	}
       }
@@ -441,22 +455,18 @@ async function v14councilAlert(alertPackage, usableChannels, interaction) { // c
   if (alertsAllGroups != null) {
   	console.log(alertsAllGroups); // this contains the running information
   }
-  /**
-  if (alertPackage.has("alertsAllGroups"alertsAllGroups.has("council")) {
-    console.log("Quest Alerts:");
-    console.log(alertPackage.alertsAllGroups.get("council"));
-  }
-  // TO DO - FIX
-  **/
   if (outputString.length > 0) {
     finalOutput.push(outputString);
     specificMirror(finalOutput, usableChannels.find(channel => channel.name === "bot-stuff"));
+  }
+  //console.log(interaction.options.getString("options"));
+  if (interaction.options.getString("options") == "silent") {
+  	return false;
   }
   await new Promise(resolve => setTimeout(resolve, 1000)); // waiting 1 second to give Discord a chance to refresh
   interaction.followUp("Would you like to run the whole announcement routine, or only have output in bot-stuff as a log?  Y/N");
   // should return TRUE if a reply is received within 1 minute to indicate the announcements can go ahead, FALSE if the timer runs out or if the reply is NO.
   let collection = await prompter(60000, interaction);
-  console.log(collection);
   if (collection != null) {
   	if (isNaN(collection) && collection.toLowerCase().includes("y")) {
 		interaction.followUp("Alerts selected, announcement routines will run shortly.");
@@ -630,7 +640,7 @@ function errorCheckIsRunning(questMaps, questChannels) {
   // What are the deliverables?
   let runningQuests = new Map(), alerts = new Map(), alertsForBlades = new Map(), alertsForVassals = new Map(), alertsForCouncil = new Map();
   let runningCaravans = new Map();
-  console.log(questMaps);
+  //console.log(questMaps);
   questChannels.forEach(caravan => {
     if (caravan[1] != null) { // stripping out empty caravans
       let runningCaravan = new Map();
@@ -644,7 +654,7 @@ function errorCheckIsRunning(questMaps, questChannels) {
     const filledKeys = Array.from(questMaps.get("filled").keys());
     filledKeys.forEach(key => {
       if (runningCaravans.has(key)) {
-        console.log(key + " is a running caravan, no action required");
+        //console.log(key + " is a running caravan, no action required");
         let runningQuest = new Map();
         runningQuest.set("DM", runningCaravans.get(key).get("DM"));
         runningQuest.set("caravan", runningCaravans.get(key).get("caravan"));
@@ -656,7 +666,7 @@ function errorCheckIsRunning(questMaps, questChannels) {
         }
         runningQuests.set(key, runningQuest);
       } else {
-        console.log(key + " is not running, a vassal is needed");
+        //console.log(key + " is not running, a vassal is needed");
         let alertForVassals = new Map();
         const reactionsForQuest = questMaps.get("filled").get(key);
         alertForVassals.set("blades", reactionsForQuest.get(emoji_crossed_swords));
@@ -671,7 +681,7 @@ function errorCheckIsRunning(questMaps, questChannels) {
     const pendingKeys = Array.from(questMaps.get("pending").keys());
     pendingKeys.forEach(key => {
       if (!runningCaravans.has(key)) {
-        console.log(key + " is not running, blades are needed");
+        //console.log(key + " is not running, blades are needed");
         let alertForBlades = new Map();
         const reactionsForQuest = questMaps.get("pending").get(key);
         alertForBlades.set("blades", reactionsForQuest.get(emoji_crossed_swords));
@@ -680,7 +690,7 @@ function errorCheckIsRunning(questMaps, questChannels) {
         }
         alertsForBlades.set(key, alertForBlades);
       } else {
-        console.log(key + " is in a running caravan but isn't filled.  Advise council");
+        //console.log(key + " is in a running caravan but isn't filled.  Advise council");
         let alertForCouncil = new Map();
         alertForCouncil.set("DM", runningCaravans.get(key).get("DM"));
         alertForCouncil.set("caravan", runningCaravans.get(key).get("caravan"));
@@ -698,7 +708,7 @@ function errorCheckIsRunning(questMaps, questChannels) {
     const overfilledKeys = Array.from(questMaps.get("overfilled").keys());
     overfilledKeys.forEach(key => {
       if (runningCaravans.has(key)) {
-        console.log(key + " is a running caravan but is overfilled.  Advise council, but list as running");
+        //console.log(key + " is a running caravan but is overfilled.  Advise council, but list as running");
         let runningQuest = new Map(), alertForCouncil = new Map();
         runningQuest.set("DM", runningCaravans.get(key).get("DM"));
         alertForCouncil.set("DM", runningCaravans.get(key).get("DM"));
@@ -716,7 +726,7 @@ function errorCheckIsRunning(questMaps, questChannels) {
         runningQuests.set(key, runningQuest);
         alertsForCouncil.set(key, alertForCouncil);
       } else {
-        console.log(key + " is not running but is overfilled.  Advise council prior to the vassals");
+        //console.log(key + " is not running but is overfilled.  Advise council prior to the vassals");
         let alertForCouncil = new Map();
         const filledContents = questMaps.get("overfilled").get(key);
         alertForCouncil.set("blades", filledContents.get(emoji_crossed_swords));
@@ -737,7 +747,7 @@ function errorCheckIsRunning(questMaps, questChannels) {
     alerts.set("vassals", alertsForVassals);
   }
   if (alertsForCouncil.size > 0) {
-    alerts.set("council.", alertsForCouncil);
+    alerts.set("council", alertsForCouncil);
   }
   console.log(alerts);
   return alerts;
@@ -757,7 +767,7 @@ function errorCheckUsersHaveRole(runningCaravansWithUsers, blades, caravanRoles)
       **/
       const bladeRoles = blades.get(blade.id)._roles; // need to check this contains the appropriate role
       if (!bladeRoles.includes(roleKey[0])) {
-        console.log(testUser(blade) + " does not have their role for " + caravanName); // need to report this to council
+        //console.log(testUser(blade) + " does not have their role for " + caravanName); // need to report this to council
         missingUsers.push([blade]);
       }
     });
@@ -765,7 +775,7 @@ function errorCheckUsersHaveRole(runningCaravansWithUsers, blades, caravanRoles)
       caravan.get("arrows").forEach(arrow => {
         const arrowRoles = blades.get(arrow.id)._roles; // need to check this contains the appropriate role
         if (!arrowRoles.includes(roleKey[0])) {
-          console.log(testUser(arrow) + " does not have their role for " + caravanName); // need to report this to council
+          //console.log(testUser(arrow) + " does not have their role for " + caravanName); // need to report this to council
           missingUsers.push([arrow]);
         }
       });
@@ -969,10 +979,10 @@ function routineCouncilAlertsSetup (alertsDividedIntoGroups,
   reactionsSortedIntoFilled,
   rosterOutput,
   reactionsData){
-  console.log("Invalid reactions:");
-  console.log(invalidReactions); // this is EMPTY even when it should have a reaction - TO DO - fix
-  console.log("Reactions Sorted Data:");
-  console.log(reactionsSortedIntoFilled);
+  //console.log("Invalid reactions:");
+  //console.log(invalidReactions); // this is EMPTY even when it should have a reaction - TO DO - fix
+  //console.log("Reactions Sorted Data:");
+  //console.log(reactionsSortedIntoFilled);
   let councilAlerts = new Map();
   councilAlerts.set("alertsAllGroups", alertsDividedIntoGroups);
   councilAlerts.set("caravans", sortedCaravans);

@@ -5,10 +5,7 @@ async function prompter(timeLimit, interaction) {
 			collector = interaction.channel.awaitMessages({ filter: collectorFilter, time: timeLimit, max: 1})
 			.then(collected => {
 				console.log("Response received:");
-				console.log(collected);
-				console.log("Keys:");
 				const key = Array.from(collected.keys());
-				console.log(key);
 				resolve(collected.get(key[0]).content);
 			}).catch(error => {
 				console.error(error);
