@@ -5,6 +5,22 @@ const {Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] }); // Create a new client instance
 client.cooldowns = new Collection();
 client.commands = new Collection(); // Load command files
+client.on('messageCreate', async (message) => {
+         // 23.11 addition as a joke, wait for a message from viewing-area including the word 'morning'
+         if (message.channelId === '473284658025594881' && message.author.id != '897148749267222649') { // message >
+         //if (message.guildId === '775705450338451478' && message.author.id != '897148749267222649') { // message >
+                 if (message.content.toLowerCase().includes("morning")) { // if someone posts a message containing >
+                         // post "Morning user, how are you?"
+                         await message.reply("morning " + message.author.username + ", how are things with you?");
+                         console.log("greeting sent");
+                 } else if (message.content.toLowerCase().includes("how about you") || message.content.toLowerCase(>
+                         // post "Pretty good thanks"
+                         await message.reply("I'm doing pretty good thanks.");
+                         console.log("response sent");
+                 }
+         }
+});
+
 
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
