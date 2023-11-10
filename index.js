@@ -19,6 +19,13 @@ client.on('messageCreate', async (message) => {
                          console.log("response sent");
                  }
          }
+         // 23.11 addition as serious, wait for a message in ads-discussion with three keywords and auto pin it.
+         //if (message.guildId === '775705450338451478' && message.channelId === '1172549592345235466') { // on dev>
+         if (message.guildId === '473284658025594881' && message.channelId === '711238243676586023') {
+                 if (message.content.toLowerCase().includes("**title**") && message.content.toLowerCase().includes(>
+                         message.pin(); // pin the message
+                 }
+         }
 });
 
 
