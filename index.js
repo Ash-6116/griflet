@@ -13,7 +13,7 @@ client.on('messageCreate', async (message) => {
                          // post "Morning user, how are you?"
                          await message.reply("morning " + message.author.username + ", how are things with you?");
                          console.log("greeting sent");
-                 } else if (message.content.toLowerCase().includes("how about you") || message.content.toLowerCase(>
+                 } else if (message.content.toLowerCase().includes("how about you") || message.content.toLowerCase().includes("hbu") || message.content.toLowerCase().includes("how are you")) { // if someone posts a message containing
                          // post "Pretty good thanks"
                          await message.reply("I'm doing pretty good thanks.");
                          console.log("response sent");
