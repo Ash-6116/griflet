@@ -9,6 +9,7 @@ async function messageCreateHandling(message) {
 			await message.reply("I'm doing pretty good thanks.");
 		}
 		// Add code to check if the author is Wookie and it is December 2/12/23 joke
+		/**
 		if (message.author.username.toLowerCase().includes("wookie")) {
 			var datetime = new Date();
 			if (datetime.getMonth() === 11 && datetime.getDate() < 26) { // if it is December and is before Christmas
@@ -22,6 +23,7 @@ async function messageCreateHandling(message) {
 				}
 			}
 		}
+		**/
 	}
 	// 23.11 addition as serious, wait for a message in ads-discussion with three keywords and auto pin it.
 	//if (message.guildId === '775705450338451478' && message.channelId === '1172549592345235466') { // on dev server in ads-discussion
