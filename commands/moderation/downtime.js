@@ -390,14 +390,24 @@ async function v14councilAlert(alertPackage, usableChannels, interaction) { // c
       			// There may have been an alert involving this caravan, so need to get its Blades another way!!!
       			if (alertsAllGroups.has("council")) {
       				players = alertsAllGroups.get("council").get(caravan[1]);
-      				players.get("blades").forEach(blade => {
-      					filledString += "<@" + blade.id + "> | ";
-      				});
-      				if (players.has("arrows")) {
-      					filledString += "\nArrows: ";
-      					players.get("arrows").forEach(arrow => {
-      						filledString += "<@" + arrow.id + "> |";
+      				if (players != undefined) {
+      					players.get("blades").forEach(blade => {
+      						filledString += "<@" + blade.id + "> | ";
       					});
+      					if (players.has("arrows")) {
+      						filledString += "\nArrows: ";
+      						players.get("arrows").forEach(arrow => {
+      							filledString += "<@" + arrow.id + "> |";
+      						});
+      					}
+      				} else {
+      					key=caravan[0] + ": " + caravan[1];
+      					if (questAlerts == null) {
+      						//questAlerts={: "This caravan has no players, should it be cleared?"};
+					} else {
+						
+					}
+      					console.log("This caravan has no players, should it be cleared?");
       				}
       			}
       		}
@@ -449,6 +459,9 @@ async function v14councilAlert(alertPackage, usableChannels, interaction) { // c
   	console.log(invalidReactions);
   }
   if (questAlerts != null) {
+  	temp = addToOutput(outputString, questAlerts, finalOutput);
+  	finalOutput = temp[0];
+  	outputString = temp[1];
   	console.log("alerts:");
   	console.log(questAlerts);
   }
