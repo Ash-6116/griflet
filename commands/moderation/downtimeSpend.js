@@ -4,7 +4,9 @@ const { SlashCommandBuilder } = require('discord.js'),
   { getAuthToken, getSpreadsheet, getSpreadsheetValues, writeSpreadsheetValues } = require('../../googleSheetsService.js');
 
 function calculateGains(reward, notes, blade, interaction) {
+  console.log(notes);
   let downtimeRolls = notes.split('[')[1].split(']')[0].split(", ");
+  console.log(downtimeRolls);
   let gain = 0, GOLD = 0, REP = 0;
   if (blade[0][10] == 0) {
     console.log("This Blade has no downtime available to spend.  Spending cannot continue.");
@@ -22,14 +24,17 @@ function calculateGains(reward, notes, blade, interaction) {
       downtimeRolls.forEach(roll => {
         if (roll <= 10 || roll.includes("natural 1")) {
             gain += rep[0];
+            console.log(roll + " awarded " + rep[0] + " rep."); // debugging
             return;
         }
         if (roll >= 11 && roll <=20) {
             gain += rep[1];
+            console.log(roll + " awarded " + rep[1] + " rep."); // debugging
             return;
         }
-        if (roll >21) {
+        if (roll >=21) {
             gain += rep[2];
+            console.log(roll + " awarded " + rep[2] + " rep."); // debugging
             return;
         }
       });
