@@ -21,6 +21,7 @@ function calculateGains(reward, notes, blade, interaction) {
     case ('REP'):
       console.log("Rep requested");
       const rep = [0, 1, 2];
+      console.log("Total spend: " + downtimeRolls.length);
       downtimeRolls.forEach(roll => {
         if (roll <= 10 || roll.includes("natural 1")) {
             gain += rep[0];

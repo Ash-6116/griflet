@@ -7,7 +7,7 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBit
 client.cooldowns = new Collection();
 client.commands = new Collection(); // Load command files
 client.on('messageCreate', async (message) => {
-	messageCreateHandling(message);
+	messageCreateHandling(client, message);
 });
 
 
