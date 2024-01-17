@@ -39,14 +39,19 @@ async function messageCreateHandling(client, message) {
 		// Start the routine
 	}
 	// 24.01 - monitor General Lounge for comments from Dyno containing the text 'absorbed'
-	//if (guild.name.includes("Griflet Development Server")) {
-	if (guild.name.includes("A Castle in the Mist") && message.author.username.toLowerCase().includes("dyno") && message.content.toLowerCase().includes("absorbed by the mists")) {
-		console.log("NOTICE: " + message.content.split(" was absorbed by the mists")[0] + " has left the server."); // split off most of the dyno message except the username of the person who left the guild
-		// TODO - run checks on Google Sheet 'Guild Roster', checking sheets 'Roster' and 'Inactive' for the given username
-	}
-	if (guild.name.includes("A Castle in the Mist") && message.author.username.toLowerCase().includes("dyno") && message.content.toLowerCase().includes("Welcome, ")) {
-		joiningUser = message.mentions.users.get(message.content.split("<@")[1].split(">")[0]); // Dyno will only ever tag a single user, so can use this to get the user ID from the message content and fetch the user's data
-		console.log("NOTICE: " + joiningUser.username + " has joined the server with nickname " + joiningUser.globalName);
+	if (guild.name.includes("A Castle in the Mist") && message.author.username.toLowerCase().includes("dyno")) { // Piggy backing off Dyno for logging
+		if (message.content.toLowerCase().includes("absorbed by the mists") && channel.name.includes("general-lounge")) {
+			console.log("NOTICE: " + message.content.split(" was absorbed by the mists")[0] + " has left the server."); // split off most of the dyno message except the username of the person who left the guild
+			// TODO - run checks on Google Sheet 'Guild Roster', checking sheets 'Roster' and 'Inactive' for the given username
+		}
+		if (message.content.toLowerCase().includes("Welcome, ")) {
+			joiningUser = message.mentions.users.get(message.content.split("<@")[1].split(">")[0]); // Dyno will only ever tag a single user, so can use this to get the user ID from the message content and fetch the user's data
+			console.log("NOTICE: " + joiningUser.username + " has joined the server with nickname " + joiningUser.globalName);
+		}
+		if (message.content.toLowerCase().includes("Welcome to the Blades!")) {
+			joiningUser = message.mentions.users.get(message.content.split("<@")[1].split(">")[0]);
+			console.log("NOTICE: " + joiningUser.username + "(" + joiningUser.globalName + ") has joined the Blades of Obsidian.");
+		}
 	}
 }
 
