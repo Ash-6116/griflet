@@ -7,7 +7,7 @@
     "@google-cloud/local-auth": "^2.1.0",
     "cjopus": "^0.0.4",
     "date-and-time": "^3.0.0",
-    "discord.js": "^14.11.0",
+    "discord.js": "^14.15.0-dev.1705363782-33674be85",
     "dotenv": "^16.0.3",
     "googleapis": "^105.0.0",
     "is-stream": "^2.0.1",
