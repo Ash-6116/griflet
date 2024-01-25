@@ -1,5 +1,5 @@
-const {mirror} = require('./output'),
-  {testUser} = require('./user');
+const {mirror} = require('./output.js'),
+  {testUser} = require('./user.js');
 
 function warnRole(interaction, command) {
   mirror([`Unfortunately, the command **/${command}** is not available at this time.  It is currently restricted to Knights, Squires, or the Baroness.`], interaction);

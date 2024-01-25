@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js'),
   date = require('date-and-time'),
-  { getAuthToken, writeSpreadsheetValues } = require('../../googleSheetsService.js'),
-  { testUser } = require('../snippets/user');
+  { getAuthToken, writeSpreadsheetValues } = require('../../shared_classes/googleSheetsService.js'),
+  { testUser } = require('../../shared_classes/user.js');
 
 async function sendToGSheet(values) {
   console.log(values);

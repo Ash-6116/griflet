@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js'),
-  roleTest = require('../snippets/roleTest'),
-  { prompter } = require('../snippets/prompter'),
-  { getAuthToken, getSpreadsheet, getSpreadsheetValues, writeSpreadsheetValues } = require('../../googleSheetsService.js');
+  roleTest = require('../../shared_classes/roleTest.js'),
+  { prompter } = require('../../shared_classes/prompter.js'),
+  { getAuthToken, getSpreadsheet, getSpreadsheetValues, writeSpreadsheetValues } = require('../../shared_classes/googleSheetsService.js');
 
 function calculateGains(reward, notes, blade, interaction) {
   console.log(notes);
@@ -337,5 +337,5 @@ module.exports = {
     } else {
       roleTest.warnRole(interaction, "downtime_spending");
     }
-  }, prompter
+  }
 };

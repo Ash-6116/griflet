@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js'),
-  roleTest = require('../snippets/roleTest'),
-  output = require('../snippets/output');
+  roleTest = require('../../shared_classes/roleTest.js'),
+  output = require('../../shared_classes/output.js');
 
 function sendMessageByFiltering(channel, message, channels) {
   let target = "";

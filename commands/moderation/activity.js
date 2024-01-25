@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js'),
-  { testUser } = require('../snippets/user'),
+  { testUser } = require('../../shared_classes/user.js'),
   { serverinfo } = require('./serverinfo.js'),
-  { mirror } = require('../snippets/output');
+  { mirror } = require('../../shared_classes/output.js');
 
 function checkUsersHaveRoles(userCache) {
   let usersWithoutRoles = new Map();

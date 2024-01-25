@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const {Client, Collection, Events, GatewayIntentBits } = require('discord.js');
-const { messageCreateHandling } = require('./messageCreate.js');
+const { messageCreateHandling } = require('./events/messageCreate.js');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] }); // Create a new client instance
 client.cooldowns = new Collection();

@@ -1,10 +1,10 @@
 const { SlashCommandBuilder } = require('discord.js'),
   fs = require('fs'),
-  roleTest = require('../snippets/roleTest'),
-  ledger = require('../../ledger.js'),
-  { prompter } = require('./downtimeSpend.js'), // Gives access to the prompter function
-  { testUser } = require('../snippets/user'),
-  { mirror, specificMirror } = require('../snippets/output'),
+  roleTest = require('../../shared_classes/roleTest.js'),
+  ledger = require('../../shared_classes/ledger.js'),
+  { prompter } = require('../../shared_classes/prompter.js'), // Gives access to the prompter function
+  { testUser } = require('../../shared_classes/user.js'),
+  { mirror, specificMirror } = require('../../shared_classes/output.js'),
   { resolveDate } = require('./categories.js'); // Gives access to RESOLVEDATE function
 
 const emoji_crossed_swords = "⚔️",

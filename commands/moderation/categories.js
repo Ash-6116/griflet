@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { testUser } = require('../snippets/user');
-const { mirror } = require('../snippets/output');
-const roleTest = require('../snippets/roleTest');
+const { testUser } = require('../../shared_classes/user.js');
+const { mirror } = require('../../shared_classes/output.js');
+const roleTest = require('../../shared_classes/roleTest.js');
 
 /**
  * Neph's recommended steps:
