@@ -1,22 +1,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const {Client, Collection, Events, GatewayIntentBits } = require('discord.js');
-const { messageCreateHandling } = require('./events/messageCreate.js');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] }); // Create a new client instance
 client.cooldowns = new Collection();
 client.commands = new Collection(); // Load command files
-
-// custom client reactions - might be able to write into eventFiles
-client.on('messageCreate', async (message) => { // triggered with every message sent to a server Griflet is a member of
-	messageCreateHandling(client, message);
-});
-
-client.on('guildMemberRemove', async (member) => { // triggered if someone leaves the server
-	console.log("Member has left server:");
-	console.log(member.user);
-});
-
 
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
