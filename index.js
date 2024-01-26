@@ -13,6 +13,7 @@ client.on('messageCreate', async (message) => { // triggered with every message 
 });
 
 client.on('guildMemberRemove', async (member) => { // triggered if someone leaves the server
+	console.log("Member has left server:");
 	console.log(member.user);
 });
 
