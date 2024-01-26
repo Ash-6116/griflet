@@ -6,8 +6,14 @@ const { messageCreateHandling } = require('./events/messageCreate.js');
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] }); // Create a new client instance
 client.cooldowns = new Collection();
 client.commands = new Collection(); // Load command files
-client.on('messageCreate', async (message) => {
+
+// custom client reactions - might be able to write into eventFiles
+client.on('messageCreate', async (message) => { // triggered with every message sent to a server Griflet is a member of
 	messageCreateHandling(client, message);
+});
+
+client.on('guildMemberRemove', async (member) => { // triggered if someone leaves the server
+	console.log(member.user);
 });
 
 
