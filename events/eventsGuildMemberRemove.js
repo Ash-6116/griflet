@@ -16,7 +16,7 @@ module.exports = {
 		const result_of_checks = await checkRosters(member);
 		console.log(processOutput(result_of_checks));
 		const channels = await member.guild.channels.fetch();
-		channels.find(channel => channel.name === "bot-stuff").send(processOutput(result_of_checks);
+		channels.find(channel => channel.name === "bot-stuff").send(processOutput(result_of_checks));
 		// member.guild.channels should exist in member object for those leaving the server
 		/**
 		User {
