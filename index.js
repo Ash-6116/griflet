@@ -38,9 +38,4 @@ for (const file of eventFiles) {
   }
 }
 
-client.on('messageCreate', (message) => {
-	// need to handle this here to take advantage of the client variable as it cannot be passed to the eventsGuildMemberRemove.js
-	console.log(await client.channels.fetch());
-});
-
 client.login(process.env.GRIFLET_TOKEN);
