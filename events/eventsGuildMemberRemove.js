@@ -1,6 +1,6 @@
 const { Events } = require('discord.js');
 const { getAllSpreadsheetValues } = require('../commands/moderation/downtimeSpend.js');
-const { find_member, processOutput } = require('../commands/moderation/misted.js');
+const { misted, processOutput } = require('../commands/moderation/misted.js');
 
 async function checkRosters(user) {
 	const searchActive = await find_member(await getAllSpreadsheetValues(process.env.spreadsheetId, "Roster"), user.username);
@@ -11,11 +11,11 @@ async function checkRosters(user) {
 module.exports = {
 	name: Events.GuildMemberRemove,
 	async execute(member) {
+		const channels = await member.guild.channels.fetch();
 		console.log("Member has left the server:");
 		console.log(member);
-		const result_of_checks = await checkRosters(member);
+		const result_of_checks = await misted(member.user.username, channels.filter(channel => channel.name === "roster"));
 		console.log(processOutput(result_of_checks));
-		const channels = await member.guild.channels.fetch();
 		channels.find(channel => channel.name === "bot-stuff").send(processOutput(result_of_checks));
 		// member.guild.channels should exist in member object for those leaving the server
 		/**
