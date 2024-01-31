@@ -15,7 +15,9 @@ module.exports = {
 		console.log(member);
 		const result_of_checks = await checkRosters(member);
 		console.log(processOutput(result_of_checks));
-		member.guild.channels.cache.get("457628737421180928").send(processOutput(result_of_checks));
+		const channels = await member.guild.channels.fetch();
+		channels.find(channel => channel.name === "bot-stuff").send(processOutput(result_of_checks);
+		// member.guild.channels should exist in member object for those leaving the server
 		/**
 		User {
   			id: '472786958045675540',
@@ -32,5 +34,5 @@ module.exports = {
 		}
 		**/
 		// the above is identical to a live user from message.author
-	},
+	}, checkRosters
 };
