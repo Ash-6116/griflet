@@ -74,5 +74,5 @@ module.exports = {
 		} else {
 			roleTest.warnRole(interaction, "misted");
 		}
-	}, misted, processOutput
+	}, misted, processOutput, find_member
 };

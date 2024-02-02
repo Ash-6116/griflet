@@ -2,12 +2,6 @@ const { Events } = require('discord.js');
 const { getAllSpreadsheetValues } = require('../commands/moderation/downtimeSpend.js');
 const { misted, processOutput } = require('../commands/moderation/misted.js');
 
-async function checkRosters(user) {
-	const searchActive = await find_member(await getAllSpreadsheetValues(process.env.spreadsheetId, "Roster"), user.username);
-	const searchInactive = await find_member(await getAllSpreadsheetValues(process.env.spreadsheetId, "Inactive"), user.username);
-	return [false, searchActive, searchInactive];
-}
-
 module.exports = {
 	name: Events.GuildMemberRemove,
 	async execute(member) {
@@ -34,5 +28,5 @@ module.exports = {
 		}
 		**/
 		// the above is identical to a live user from message.author
-	}, checkRosters
+	}
 };
