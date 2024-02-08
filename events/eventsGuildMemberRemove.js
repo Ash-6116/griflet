@@ -10,7 +10,7 @@ module.exports = {
 		console.log(member);
 		const result_of_checks = await misted(member.user.username, channels.filter(channel => channel.name === "roster"));
 		console.log(processOutput(result_of_checks));
-		channels.find(channel => channel.name === "bot-stuff").send(processOutput(result_of_checks));
+		channels.find(channel => channel.name === "bot-stuff").send("__**" + member.username + " has left the server:__**\n" + processOutput(result_of_checks));
 		// member.guild.channels should exist in member object for those leaving the server
 		/**
 		User {
