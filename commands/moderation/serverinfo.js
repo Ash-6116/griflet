@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js'),
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
   date = require('date-and-time'),
   { getAuthToken, writeSpreadsheetValues } = require('../../shared_classes/googleSheetsService.js'),
   { testUser } = require('../../shared_classes/user.js');
@@ -26,6 +26,7 @@ async function sendToGSheet(values) {
 }
 
 async function serverinfo(interaction) {
+	console.log(interaction.guild);
   const users = await interaction.guild.members.fetch(), // collect all Users
     owner = users.get(interaction.guild.ownerId), // collect the OwnerId
     roles = await interaction.guild.roles.fetch(), // collect all Roles
@@ -35,6 +36,9 @@ async function serverinfo(interaction) {
     categoryChannels = channels.filter(channel => channel.type === 4), // collect all Category Channels by type
     bots = users.filter(user => user.user.bot === true), // filters for the number of BOTS
     people = users.filter(user => user.user.bot === false); // filters for the number of USERS
+    const embed = new EmbedBuilder()
+    	.setTitle(interaction.guild.name)
+    	.setImage(interaction.guild.icon)
   let output = "**__" + interaction.guild.name + "__**\n";
   let threadChannels = 0;
   channels.forEach(channel => {
@@ -47,7 +51,8 @@ async function serverinfo(interaction) {
       }
     }
   });
-  // arranging the output to go to Discord below
+  // arranging the output to go to Discord below OLD - REMOVE ONCE EMBED WORKS!!!
+  /**
   output += "Owner:\t\t" + testUser(owner.user) + "\n";
   output += "Channels:\t" + channels.size + "\n";
   output += "\tCategory:\t" + categoryChannels.size + "\n";
@@ -58,9 +63,23 @@ async function serverinfo(interaction) {
   output += "Members:\t\t" + users.size + "\n";
   output += "\tPeople:\t" + people.size + "\n";
   output += "\tBots:\t" + bots.size + "\n";
+  **/
+  // arranging the output to go into the embed
+  embed.addFields({name: "Owner", value: testUser(owner.user), inline: false});
+  embed.addFields({name: "Channels", value: channels.size, inline: false});
+  embed.addFields({name: "Category", value: categoryChannels.size, inline: true});
+  embed.addFields({name: "Voice", value: voiceChannels.size, inline: true});
+  embed.addFields({name: "Text", value: textChannels.size, inline: true});
+  embed.addFields({name: "Unlocked Threads", value: threadChannels, inline: true});
+  embed.addFields({name: "Roles", value: roles.size, inline: false});
+  embed.addFields({name: "Members", value: users.size, inline: false});
+  embed.addFields({name: "People", value: people.size, inline: true});
+  embed.addFields({name: "Bots", value: bots.size, inline: true});
   // sending this data, along with the date, to a gSheet so it can be tracked and measured
   sendToGSheet([[date.format(new Date(), 'YYYY.MM.DD'), testUser(owner.user), categoryChannels.size, voiceChannels.size, textChannels.size, threadChannels, roles.size, people.size, bots.size]]);
-  return output;
+  //return output;
+  interaction.editReply({ embeds: [embed] });
+  return;
 }
 
 module.exports = { serverinfo, 
@@ -69,6 +88,7 @@ module.exports = { serverinfo,
     .setDescription('Provides information about the server'),
   async execute(interaction) {
     await interaction.deferReply();
-    interaction.editReply(await serverinfo(interaction));
+    //interaction.editReply(await serverinfo(interaction));
+    serverinfo(interaction);
   },
 };
