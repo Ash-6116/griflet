@@ -3,6 +3,8 @@ const { Events, EmbedBuilder } = require('discord.js');
 module.exports = {
 	name: Events.GuildMemberUpdate,
 	async execute(member) {
+		console.log("Member has been updated...");
+		console.log(member);
 		if (member.pending != false) {
 			const channels = await member.guild.channels.fetch(),
 				embed = new EmbedBuilder()

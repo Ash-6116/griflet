@@ -3,6 +3,8 @@ const { Events, EmbedBuilder } = require('discord.js');
 module.exports = {
 	name: Events.GuildMemberAdd,
 	async execute(member) {
+		console.log("Member has joined the channel...");
+		console.log(member);
 		const channels = await member.guild.channels.fetch(),
 			embed = new EmbedBuilder()
 				.setTitle(member.user.username + " has joined the server!")
