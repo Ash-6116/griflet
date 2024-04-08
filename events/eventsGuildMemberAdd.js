@@ -10,7 +10,7 @@ module.exports = {
 				.setTitle(member.user.username + " has joined the server!")
 				.setImage(member.user.displayAvatarURL())
 				.addFields({name: "username", value: member.user.username, inline: false});
-		if (member.user.has(globalName)) {
+		if (member.user.hasOwnProperty("globalName")) {
 			embed.addFields({name: "nickname", value: member.user.globalName, inline: false});
 		}
 		channels.find(channel => channel.name === "bot-stuff").send({ embeds: [embed] });
