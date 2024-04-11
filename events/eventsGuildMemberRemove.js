@@ -9,6 +9,7 @@ module.exports = {
 			.setTitle(member.user.username + " has left the server!")
 		const channels = await member.guild.channels.fetch();
 		console.log(member.user.username + " has left the server!");
+		console.log(member);
 		const result_of_checks = await misted(member.user.username, channels.filter(channel => channel.name === "roster"));
 		embed.setDescription(processOutput(result_of_checks));
 		embed.setThumbnail(member.user.displayAvatarURL());
