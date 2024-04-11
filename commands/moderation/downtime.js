@@ -1,5 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js'),
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
   fs = require('fs'),
+  outputStyle = process.env.outputStyle,
   roleTest = require('../../shared_classes/roleTest.js'),
   ledger = require('../../shared_classes/ledger.js'),
   { prompter } = require('../../shared_classes/prompter.js'), // Gives access to the prompter function
@@ -289,7 +290,191 @@ function addToOutput(outputString, addendum, finalOutput) {
   return [finalOutput, outputString];
 }
 
+async function NGcouncilAlert(alertPackage, usableChannels, interaction) {
+	/**
+	 * Going to be receiving a JSON object containing the alerts, rather than the old array.
+	 * Each key is going to be describing the element in question.
+	**/
+	let roster, caravans, reactions, emptyCaravans, filledCaravans, alertsAllGroups, invalidReactions, missingUsers, questAlerts, outputEmbedArray = [];
+	if (alertPackage.has("roster")) { roster = alertPackage.get("roster")}
+	if (alertPackage.has("caravans")) { caravans = alertPackage.get("caravans"), emptyCaravans = caravans[0], filledCaravans = caravans[1]}
+	if (alertPackage.has("reactions")) { reactions = alertPackage.get("reactions")}
+	if (alertPackage.has("alertsAllGroups")) { alertsAllGroups = alertPackage.get("alertsAllGroups") }
+	if (alertPackage.has("invalid reactions")) { invalidReactions = alertPackage.get("invalid reactions") }
+	if (alertPackage.has("missing users")) { missingUsers = alertPackage.get("missing users") }
+	if (alertPackage.has("quest alerts")) { questAlerts = alertPackage.get("quest alerts") }
+	// 1st, lets deal with the roster (these should only trigger if they are in the alert package!!!)
+	const rosterEmbed = new EmbedBuilder()
+		.setTitle("Rosters");
+	if (roster != null) {
+		roster.forEach(sheet => {
+			if (sheet.length != 0) { // filtering out empty elements
+				if (sheet[1] === true) { // is the sheet being checked? Y/N
+					rosterEmbed.addFields({ name: sheet[0], value: "is currently being checked", inline: false });
+				} else {
+					rosterEmbed.addFields({ name: sheet[0], value: "is not currently being checked.", inline: false });
+				}
+			}
+		});
+	} else {
+		rosterEmbed.setDescription("There are no messages waiting in roster.");
+	}
+	outputEmbedArray.push(rosterEmbed);
+	if (alertsAllGroups != null) {
+		// 2nd, show the quests waiting for Blades
+		if (alertsAllGroups.has("blades")) {
+			const bladeEmbed = new EmbedBuilder()
+				.setTitle("Quests Waiting For Blades");
+			let bladesString = "";
+			Array.from(alertsAllGroups.get("blades").keys()).forEach(quest => {
+				bladesString += quest + "\n";
+			});
+			bladeEmbed.setDescription(bladesString);
+			outputEmbedArray.push(bladeEmbed);
+		}
+		// 3rd, show the quests waiting for Blades
+		if (alertsAllGroups.has("vassals")) {
+			const vassalEmbed = new EmbedBuilder()
+				.setTitle("Quests Waiting For Vassals");
+			let vassalString = "";
+			Array.from(alertsAllGroups.get("vassals").keys()).forEach(quest => {
+				vassalString += quest + "\n";
+			});
+			vassalEmbed.setDescription(vassalString);
+			outputEmbedArray.push(vassalEmbed);
+		}
+	}
+	// 4th, show all the reacted quests - including invalid reactions
+	if (reactions != null) {
+		const reactionsEmbed = new EmbedBuilder()
+			.setTitle("Reacted Quests");
+		let reactionString = "";
+		Array.from(reactions.keys()).forEach(quest => {
+			reactionString += quest + "\n";
+			reactionMap = reactions.get(quest);
+			Array.from(reactionMap.keys()).forEach(reaction => {
+				reactionString += reaction + " x" + reactionMap.get(reaction).length + ": " + reactionMap.get(reaction) + "\n";
+			});
+		});
+		reactionsEmbed.setDescription(reactionString);
+		outputEmbedArray.push(reactionsEmbed);
+	}
+	// 5th, show the filled caravans
+	if (filledCaravans != null) {
+		const filledEmbed = new EmbedBuilder()
+			.setTitle("Filled Caravans");
+		filledCaravans.forEach(caravan => {
+			let filledString = "DM: " + caravan[2] + "\tDate Started: " + caravan[3] + "\n";
+			if (alertsAllGroups != null) {
+				let bladeString = "", arrowString = "";
+				if (alertsAllGroups.has("running")) {
+					const players = alertsAllGroups.get("running").get(caravan[1]);
+					if (players != undefined) {
+						bladeString += "blades: ";
+						players.get("blades").forEach(blade => {
+							bladeString += "<@" + blade.id + "> | ";
+						});
+						if (players.has("arrows")) {
+							arrowString += "arrows: ";
+							players.get("arrows").forEach(arrow => {
+								arrowString += "<@" + arrow.id + "> | ";
+							});
+						}
+					} else {
+						console.log("Oops, something went wrong with: " + caravan[1]);
+						if (alertsAllGroups.has("council")) {
+							players = alertsAllGroups.get("council").get(caravan[1]);
+							if (players != undefined) {
+								players.get("blades").forEach(blade => {
+									bladeString += "<@" + blade.id + "> | ";
+								});
+								if (players.has("arrows")) {
+									players.get("arrows").forEach(arrow => {
+										arrowString += "<@" + arrow.id + "> | ";
+									});
+								}
+							} else {
+								key = caravan[0] + ": " + caravan[1];
+								if (questAlerts == null) {
+								} else {
+									//questAlerts={: "This caravan has no players, should it be cleared?"};
+								}
+								console.log("This caravan has no players, should it be cleared?");
+							}
+						}
+					}
+				}
+			}
+			filledEmbed.addFields({ name: caravan[0] + ": " + caravan[1], value: filledString + "\n" + bladeString + "\n" + arrowString, inline: false });
+		});
+		outputEmbedArray.push(filledEmbed);
+	}
+	// 6th, show the empty caravans
+	if (emptyCaravans != null) {
+		const emptyEmbed = new EmbedBuilder()
+			.setTitle("Empty Caravans");
+		let emptyString = "";
+		emptyCaravans.forEach(caravan => {
+			emptyString += caravan + "\n";
+		});
+		emptyEmbed.setDescription(emptyString);
+		outputEmbedArray.push(emptyEmbed);
+	}
+	// 7th, show the alerts for the council
+	/**
+	 * These could be anything from a missing role
+	 * to a Blade that left a reaction leaving the server
+	**/
+	if (missingUsers != null) {
+		const missingEmbed = new EmbedBuilder()
+			.setTitle("Missing Users")
+			.setDescription("The following reactions were left by someone no longer on the seerver");
+		Array.from(missingUsers.keys()).forEach(key => {
+			let missingString = "";
+			Array.from(missingUsers.get(key).keys()).forEach(reaction => {
+				missingString += reaction + ": ";
+				missingUsers.get(key).get(reaction).forEach(user => {
+					missingString += testUser(user) + ", ";
+				});
+				missingString += "\n";
+			});
+			missingEmbed.addFields({ name: key, value: missingString, inline: false });
+		});
+		outputEmbedArray.push(missingEmbed);
+	}
+	if (invalidReactions != null) {
+		console.log("invalids:");
+		console.log(invalidReactions);
+	}
+	if (questAlerts != null) {
+		console.log("alerts:\n" + questAlerts);
+		const alertEmbed = new EmbedBuilder()
+			.setTitle("Alerts")
+			.setDescription(questAlerts);
+		//outputEmbedArray.push(alertEmbed);
+	}
+	usableChannels.find(channel => channel.name === "bot-stuff").send({ content: "Weekly Downtime Log", embeds: outputEmbedArray }); // if any mistakes have been made, check the content of outputEmbedArray!!!
+	if (interaction.options.getString("options") == "silent") {
+		return false;
+	}
+	await new Promise(resolve => setTimeout(resolve, 1000)); // waiting 1 second to give Discord a chance to refresh
+	interaction.followUp("Would you like to run the whole announcement routine, or only have output in bot-stuff as a log? Y/N");
+	let collection = await prompter(120000, interaction); // should return TRUE if a reply is received within 2 minutes to indicate the announcements can go ahead, FALSE if the timer runs out or if the reply is NO.
+	if (collection != null) {
+		if (isNaN(collection) && collection.toLowerCase().includes("y")) {
+			interaction.followUp("Alerts selected, announcement routines will run shortly.");
+			return true;
+		}
+	} else {
+		interaction.followUp("No alerts selected, no announcement routines will run.");
+		return false;
+	}
+}
+
 async function v14councilAlert(alertPackage, usableChannels, interaction) { // change to use outputSpecificMirror NOT interaction
+  if (outputStyle === "Embed") {
+  	return NGcouncilAlert(alertPackage, usableChannels, interaction);
+  }
   /**
    * Going to be receiving a JSON object containing the alerts, rather than the old array.
    * Each key is going to be describing the element in question.
@@ -813,47 +998,86 @@ function prompt(usableChannels) { // TO DO - alter so that it will only post if 
   return;
 }
 
+function NGvassalsAlert(questsWaitingForDM, usableRoles, usableChannels) {
+	const questKeys = Array.from(questsWaitingForDM.keys()),
+		Embed = new EmbedBuilder()
+			.setTitle("Quest Has Filled");
+	let stdAnnouncement = "The following ", endAnnouncement = "Is there anyone free who can volunteer to take ";
+	if (questsWaitingForDM.size == 1) {
+		stdAnnouncement += "quest has been filled, ";
+		endAnnouncement += "this quest?";
+	} else {
+		stdAnnouncement += "quests have been filled, ";
+		endAnnouncement += "these quests?";
+	}
+	endAnnouncement += "  Many thanks.";
+	Embed.setDescription(stdAnnouncement + endAnnouncement);
+	questKeys.forEach(key => {
+		let value = "The party will be: ", usersWaiting = "";
+		const blades = questsWaitingForDM.get(key).get("blades");
+		blades.forEach(blade => {
+			usersWaiting += "<@" + blade.id + ">, ";
+		});
+		if (questsWaitingForDM.get(key).has("arrows")) { // this shouldn't be possible, but is here just in case
+			const arrows = questsWaitingForDM.get(key).get("arrows");
+			arrows.forEach(arrow => {
+				usersWaiting += "<@" + arrow.id + ">, ";
+			});
+		}
+		Embed.addFields({ name: key, value: value + usersWaiting, inline: false });
+	});
+	usableChannels.find(channel => channel.name === "briefing-room").send({ content: "<@&" + usableRoles.find(role => role.name === "Vassals").id + ">", embeds: [Embed] });
+	console.log("Quests");
+	console.log(questsWaitingForDM);
+	return;
+}
+
 function vassalsAlert(questsWaitingForDM, usableRoles, usableChannels) {
-  let finalOutput = [];
-  const questKeys = Array.from(questsWaitingForDM.keys());
-  let stdAnnouncement = "<@&" + usableRoles.find(role => role.name === "Vassals").id + ">, the following ",
-    endAnnouncement = "Is there anyone free who can volunteer to take ";
-  if (questsWaitingForDM.size == 1) {
-    stdAnnouncement += "quest has been filled.\n";
-    endAnnouncement += "this quest?";
-  } else {
-    stdAnnouncement += "quests have filled.\n";
-    endAnnouncement += "these quests?";
+  if (outputStyle === "Embed") {
+  	NGvassalsAlert(questsWaitingForDM, usableRoles, usableChannels);
+ 	return;
+  } else if (outputStyle === "Legacy") {
+  	let finalOutput = [];
+  	const questKeys = Array.from(questsWaitingForDM.keys());
+  	let stdAnnouncement = "<@&" + usableRoles.find(role => role.name === "Vassals").id + ">, the following ",
+    	endAnnouncement = "Is there anyone free who can volunteer to take ";
+  	if (questsWaitingForDM.size == 1) {
+    		stdAnnouncement += "quest has been filled.\n";
+    		endAnnouncement += "this quest?";
+  	} else {
+    		stdAnnouncement += "quests have filled.\n";
+    		endAnnouncement += "these quests?";
+  	}
+  	endAnnouncement += "  Many thanks.";
+  	questKeys.forEach(key => {
+    		stdAnnouncement += key + ", the party will be: ";
+    		const blades = questsWaitingForDM.get(key).get("blades");
+    		let usersWaiting = "";
+    		blades.forEach(blade => {
+      			usersWaiting += "<@" + blade.id + ">, ";
+    		});
+    		if (questsWaitingForDM.get(key).has("arrows")) {
+      			const arrows = questsWaitingForDM.get(key).get("arrows");
+      			arrows.forEach(arrow => {
+        			usersWaiting += "<@" + arrow.id + ">, ";
+      			});
+    		}
+    		if (stdAnnouncement.length + usersWaiting.length < 2000) {
+      			stdAnnouncement += usersWaiting.slice(0, (usersWaiting.length-2)) + "\n";
+    		} else {
+      			finalOutput.push(stdAnnouncement);
+      			stdAnnouncement = usersWaiting.slice(0, (usersWaiting.length-2)) + "\n";
+    		}
+  	});
+  	if (stdAnnouncement.length + endAnnouncement.length < 2000) {
+    		stdAnnouncement += endAnnouncement;
+  	}  else {
+    		finalOutput.push(stdAnnouncement);
+    		stdAnnouncement = endAnnouncement;
+  	}
+  	finalOutput.push(stdAnnouncement);
+  	specificMirror(finalOutput, usableChannels.find(channel => channel.name === "briefing-room"));
   }
-  endAnnouncement += "  Many thanks.";
-  questKeys.forEach(key => {
-    stdAnnouncement += key + ", the party will be: ";
-    const blades = questsWaitingForDM.get(key).get("blades");
-    let usersWaiting = "";
-    blades.forEach(blade => {
-      usersWaiting += "<@" + blade.id + ">, ";
-    });
-    if (questsWaitingForDM.get(key).has("arrows")) {
-      const arrows = questsWaitingForDM.get(key).get("arrows");
-      arrows.forEach(arrow => {
-        usersWaiting += "<@" + arrow.id + ">, ";
-      });
-    }
-    if (stdAnnouncement.length + usersWaiting.length < 2000) {
-      stdAnnouncement += usersWaiting.slice(0, (usersWaiting.length-2)) + "\n";
-    } else {
-      finalOutput.push(stdAnnouncement);
-      stdAnnouncement = usersWaiting.slice(0, (usersWaiting.length-2)) + "\n";
-    }
-  });
-  if (stdAnnouncement.length + endAnnouncement.length < 2000) {
-    stdAnnouncement += endAnnouncement;
-  }  else {
-    finalOutput.push(stdAnnouncement);
-    stdAnnouncement = endAnnouncement;
-  }
-  finalOutput.push(stdAnnouncement);
-  specificMirror(finalOutput, usableChannels.find(channel => channel.name === "briefing-room"));
   return;
 }
 
@@ -866,6 +1090,64 @@ function formatQuestForOutput(questWaitingForBlades, title) {
   }
   announcement += "Signed Up)\n";
   return announcement;
+}
+
+function NGannounce(questsWaitingForBlades, usableRoles, usableChannels, messageForBlades) {
+	const bladesRole = usableRoles.find(role => role.name === "Blades"),
+		knightsRole = usableRoles.find(role => role.name === "Knights"),
+		squiresRole = usableRoles.find(role => role.name === "Squires"),
+		announcements = usableChannels.find(channel => channel.name === "announcements"),
+		Embed = new EmbedBuilder()
+		.setTitle("Weekly Downtime Awarded");
+	let questKeys, tier1Array, tier2Array, tier3Array, tier4Array,
+		stdAnnouncement = "The weekly downtime has been applied.  As a reminder you can only spend downtime or shop if you are not in a quest or if your quest has not left the guild hall.\nPlease ask <@&" + knightsRole.id + "> or <@&" + squiresRole.id + "> for spending downtime, a document of suggested activities can be found in <#" + usableChannels.find(channel => channel.name === "gameplay-reference").id + ">.\n\n__**Quests Waiting For Guildmates:**__";
+	if (questsWaitingForBlades != null) {
+		questKeys = Array.from(questsWaitingForBlades.keys());
+	}
+	if (questKeys != undefined) {
+		tier1Array = questKeys.filter(quest => quest.includes("1")),
+		tier2Array = questKeys.filter(quest => quest.includes("2")),
+		tier3Array = questKeys.filter(quest => quest.includes("3")),
+		tier4Array = questKeys.filter(quest => quest.includes("4"));
+	}
+	if (questsWaitingForBlades != null) { // uses tier1 so need a second if statement to allow the arrays to populate
+		if (tier1Array.length > 0) {
+			let quests = "";
+			tier1Array.forEach(quest => {
+				quests += formatQuestForOutput(questsWaitingForBlades.get(quest), quest);
+			});
+			Embed.addFields({name: "Tier 1 Quests", value: quests, inline: false});
+		}
+		if (tier2Array.length > 0) {
+			let quests = "";
+			tier2Array.forEach(quest => {
+				quests += formatQuestForOutput(questsWaitingForBlades.get(quest), quest);
+			});
+			Embed.addFields({name: "Tier 2 Quests", value: quests, inline: false});
+		}
+		if (tier3Array.length > 0) {
+			let quests = "";
+			tier3Array.forEach(quest => {
+				quests += formatQuestForOutput(questsWaitingForBlades.get(quest), quest);
+			});
+			Embed.addFields({name: "Tier 3 Quests", value: quests, inline: false});
+		}
+		if (tier4Array.length > 0) {
+			let quests = "";
+			tier4Array.forEach(quest => {
+				quests += formatQuestForOutput(questsWaitingForBlades.get(quest), quest);
+			});
+			Embed.addFields({name: "Tier 4 Quests", value: quests, inline: false});
+		}
+	} else {
+		stdAnnouncement += "None\n";
+	}
+	if (messageForBlades != null) {
+		Embed.addFields({name: "Message From The Council", value: messageForBlades, inline: false});
+	}
+	Embed.setDescription(stdAnnouncement);
+	//announcements.send({ embeds: [Embed] "<@&" + bladesRole.id + ">"});
+	announcements.send({content: "<@&" + bladesRole.id + ">",  embeds: [Embed] });
 }
 
 function announce(questsWaitingForBlades, usableRoles, usableChannels, messageForBlades) {
@@ -978,9 +1260,21 @@ function routineVassalsAnnouncement(alertsDividedIntoGroups, usableRoles, usable
 
 function routineAnnouncement(alertsDividedIntoGroups, usableRoles, usableChannels, messageForBlades) {
   if (alertsDividedIntoGroups.has("blades")) { // going to want to run an ANNOUNCEMENT with the blades included
-    announce(alertsDividedIntoGroups.get("blades"), usableRoles, usableChannels, messageForBlades);
+    if (outputStyle === "Legacy") {
+      announce(alertsDividedIntoGroups.get("blades"), usableRoles, usableChannels, messageForBlades);
+    } else if (outputStyle === "Embed") {
+      NGannounce(alertsDividedIntoGroups.get("blades"), usableRoles, usableChannels, messageForBlades);
+    } else {
+      console.log("Improper output style selected, must be either Legacy or Embed!!!");
+    }
   } else {  // still need to run an alert, but with no quests waiting
-    announce(null, usableRoles, usableChannels, messageForBlades);
+    if (outputStyle === "Legacy") {
+      announce(null, usableRoles, usableChannels, messageForBlades);
+    } else if (outputStyle === "Embed") {
+      NGannounce(null, usableRoles, usableChannels, messageForBlades);
+    } else {
+      console.log("Improper output style selected, must be either Legacy or Embed!!!");
+    }
   }
   return;
 }

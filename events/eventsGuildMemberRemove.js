@@ -1,16 +1,19 @@
-const { Events } = require('discord.js');
+const { Events, EmbedBuilder } = require('discord.js');
 const { getAllSpreadsheetValues } = require('../commands/moderation/downtimeSpend.js');
 const { misted, processOutput } = require('../commands/moderation/misted.js');
 
 module.exports = {
 	name: Events.GuildMemberRemove,
 	async execute(member) {
+		const embed = new EmbedBuilder()
+			.setTitle(member.user.username + " has left the server!")
 		const channels = await member.guild.channels.fetch();
-		console.log("Member has left the server:");
-		console.log(member);
+		console.log(member.user.username + " has left the server!");
 		const result_of_checks = await misted(member.user.username, channels.filter(channel => channel.name === "roster"));
-		console.log(processOutput(result_of_checks));
-		channels.find(channel => channel.name === "bot-stuff").send("__**" + member.user.username + " has left the server:__**\n" + processOutput(result_of_checks));
+		embed.setDescription(processOutput(result_of_checks));
+		embed.setThumbnail(member.user.displayAvatarURL());
+		//channels.find(channel => channel.name === "bot-stuff").send("**__" + member.user.username + " has left the server:__**\n" + processOutput(result_of_checks));
+		channels.find(channel => channel.name === "bot-stuff").send({ embeds: [embed] });
 		// member.guild.channels should exist in member object for those leaving the server
 		/**
 		User {
@@ -24,7 +27,7 @@ module.exports = {
   			avatar: 'bc6457686e008c1b38a5818450212369',
  			banner: undefined,
 			accentColor: undefined,
-  			avatarDecoration: null
+3  			avatarDecoration: null
 		}
 		**/
 		// the above is identical to a live user from message.author

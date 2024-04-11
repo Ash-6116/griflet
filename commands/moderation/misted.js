@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js'),
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
 	roleTest = require('../../shared_classes/roleTest.js'),
 	{ getAllSpreadsheetValues } = require('./downtimeSpend.js');
 
@@ -68,9 +68,13 @@ module.exports = {
 	async execute(interaction) {
 		if (roleTest.roleTest(interaction)) {
 			await interaction.deferReply();
+			const outputEmbed = new EmbedBuilder()
+				.setTitle("Result of check on " + interaction.options.getString('user'))
 			const channels = await interaction.guild.channels.fetch();
 			const result_of_checks = await misted(interaction.options.getString('user'), channels.filter(channel => channel.name === "roster"));
-			interaction.editReply("__**Result of check on " + interaction.options.getString('user') + "**__\n" + processOutput(result_of_checks));
+			outputEmbed.setDescription(processOutput(result_of_checks));
+			interaction.editReply({ embeds: [outputEmbed] });
+			//interaction.editReply("__**Result of check on " + interaction.options.getString('user') + "**__\n" + processOutput(result_of_checks));
 		} else {
 			roleTest.warnRole(interaction, "misted");
 		}

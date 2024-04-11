@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js'),
   roleTest = require('../../shared_classes/roleTest.js'),
+  outputStyle = process.env.outputStyle,
   output = require('../../shared_classes/output.js');
 
 function sendMessageByFiltering(channel, message, channels) {

@@ -1,8 +1,17 @@
 const {mirror} = require('./output.js'),
-  {testUser} = require('./user.js');
+  {testUser} = require('./user.js'),
+  { EmbedBuilder } = require('discord.js'),
+  outputStyle = process.env.outputStyle;
 
 function warnRole(interaction, command) {
-  mirror([`Unfortunately, the command **/${command}** is not available at this time.  It is currently restricted to Knights, Squires, or the Baroness.`], interaction);
+	if (outputStyle === "Legacy") {
+  		mirror([`Unfortunately, the command **/${command}** is not available at this time.  It is currently restricted to Knights, Squires, or the Baroness.`], interaction);
+  	} else if (outputStyle === "Embed") {
+  		const embed = new EmbedBuilder()
+  			.setTitle("Command Currently Unavailable")
+  			.setDescription(`Unfortunately, the command **/${command}** is not available at this time.  It is currently restricted to Knights, Squires, or the Baroness`)
+  		mirror(undefined, interaction, embed);
+  	}
 }
 
 function roleTest(interaction) {

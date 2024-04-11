@@ -1,6 +1,6 @@
 {
   "name": "griflet",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "description": "An administration tool for the Discord server A Castle In The Mist",
   "main": "index.js",
   "dependencies": {

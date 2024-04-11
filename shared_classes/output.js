@@ -1,3 +1,6 @@
+const { EmbedBuilder } = require('discord.js'),
+	outputStyle = process.env.outputStyle;
+
 async function restOfOutput(array, interaction) {
   for (let i=1; i < array.length; i++) {
     await interaction.followUp(array[i]);
@@ -6,14 +9,34 @@ async function restOfOutput(array, interaction) {
   return;
 }
 
-function specificMirror(textArray, channel) {
-  textArray.forEach(unit => {
-    channel.send(unit);
-  });
+function specificMirror(textArray, channel, Embed) {
+	if (outputStyle === "Legacy") {
+  		textArray.forEach(unit => {
+    			channel.send(unit);
+  		});
+  	} else if (outputStyle === "Embed") {
+  		if (textArray != undefined && Embed != undefined) {
+  			channel.send({ content: textArray[0], embed: Embed});
+  		} else if (textArray != undefined && Embed == undefined) {
+  			channel.send(textArray[0]);
+  		} else if (textArray == undefined && Embed != undefined) {
+  			channel.send({embed: Embed});
+  		}
+  	} else {
+  		console.log("Invalid Output Style selected, Output Style must be set to either Legacy or Embed.");
+  	}
   return;
 }
 
-async function mirror(textArray, interaction) {
+function outputEmbed(title, content, channel, image) {
+	const outputEmbeddable = new EmbedBuilder()
+		.setTitle(title)
+		.setDescription(content)
+	channel.send({ embeds: [outputEmbeddable] });
+	return;
+}
+
+async function mirror(textArray, interaction, Embed) {
   /**
    * receives an array of text that needs to be sent to an interaction.
    *
@@ -21,21 +44,30 @@ async function mirror(textArray, interaction) {
    * All FOLLOWING elements of the array need to use interaction.followUp
    * they also need to be sent to console.log!
   **/
-  /**
-  await interaction.reply(textArray[0]).catch(err => {
-    interaction.editReply(textArray[0]);
-    /**
-     * send a reply to an interaction or if that interaction has already had a reply
-     * edit the reply instead
-  }).then(reply => {
-    console.log("Finished posting first message");
-  });
-  **/
-  for (let i=0; i < textArray.length; i++) {
-    await interaction.followUp(textArray[i]);
-    console.log(textArray[i]);
+  if (outputStyle == "Legacy") {
+  	for (let i=0; i < textArray.length; i++) {
+    		await interaction.followUp(textArray[i]);
+    		console.log(textArray[i]);
+  	}
+  } else if (outputStyle == "Embed") {
+  	if (textArray != undefined && Embed != undefined) {
+  		await interaction.followUp({ content: textArray[0], embeds: Embed});
+  		console.log(textArray[0]);
+  		console.log(Embed);
+  	} else if (textArray != undefined && Embed == undefined) {
+  		for (let i=0; i < textArray.length; i++) {
+  			await interaction.followUp(textArray[i]);
+  			console.log(textArray[i]);
+  		}
+  	} else if (textArray == undefined && Embed != undefined) {
+  		console.log("sending only an Embed");
+  		await interaction.followUp({ embeds: Embed});
+  		console.log(Embed);
+  	}
+  } else {
+  	console.log("Invalid Output Style selected, Output Style must be set to either Legacy or Embed.");
   }
   return;
 }
 
-module.exports = {mirror, specificMirror}
+module.exports = {mirror, specificMirror, outputEmbed}

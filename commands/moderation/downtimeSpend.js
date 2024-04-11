@@ -1,6 +1,7 @@
-const { SlashCommandBuilder } = require('discord.js'),
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
   roleTest = require('../../shared_classes/roleTest.js'),
   { prompter } = require('../../shared_classes/prompter.js'),
+  outputStyle = process.env.outputStyle,
   { getAuthToken, getSpreadsheet, getSpreadsheetValues, writeSpreadsheetValues } = require('../../shared_classes/googleSheetsService.js');
 
 function calculateGains(reward, notes, blade, interaction) {
@@ -137,7 +138,90 @@ async function getAllSpreadsheetValues(spreadsheetId, sheetName) {
   return; 
 }
 
-function constructViewOutput(bladesData, player) {
+function returnAvatar(player, users) {
+	let blade = users.filter(member => member.user.username === player.split("@")[1]),
+		avatarURL = undefined;
+	if (blade.size > 0) {
+		const idKey = Array.from(blade.keys());
+		avatarURL = blade.get(idKey[0]).user.displayAvatarURL();
+	}
+	return avatarURL;
+}
+
+async function resolveArtwork(bladeData, users) {
+	// first, see if the character sheet listed in bladeData[14] (v1.4!C176:H176) contains a URL
+	let artworkUrl = undefined;
+	try {
+		const auth = await getAuthToken();
+		const charSheet = await getSpreadsheetValues({
+			spreadsheetId: bladeData[14].split("d/")[1].split("/edit")[0], // spreadsheetId is between d/ and /edit of the URL in bladeData[14]
+			sheetName: "C176:H176",
+			auth
+		});
+		if (charSheet.data.values != undefined) { // if it is undefined, it will not be useable for retrieving a URL
+			let value = charSheet.data.values[0][0];
+			if (value.includes("http")) {
+				artworkUrl = value;
+			} else {
+				if (users != null) {
+					artworkUrl = returnAvatar(bladeData[0], users);
+				}
+			}
+		} else {
+			if (users != null) {
+				artworkUrl = returnAvatar(bladeData[0], users);
+			}
+		}
+	} catch (error) {
+		console.log(error);
+	}
+	return artworkUrl;
+}
+
+async function constructNGViewOutput(bladesData, users) { // need to define player for each Blade
+	const EmbedArray = [];
+	for (i=0; i < bladesData.length; i++) {
+		const bladeData = bladesData[i];
+	//bladesData.forEach(bladeData => {
+		const Embed = new EmbedBuilder();
+		Embed.setTitle(bladeData[2]);
+		Embed.addFields({name: "Reputation", value: bladeData[7], inline: true});
+		Embed.addFields({name: "Gold", value: bladeData[8], inline: true});
+		Embed.addFields({name: "Tokens", value: bladeData[9], inline: true});
+		Embed.addFields({name: "Downtime", value: bladeData[10], inline: true});
+		Embed.addFields({name: "Hearts Remaining", value: bladeData[11], inline: true});
+		Embed.addFields({name: "Tier", value: bladeData[12], inline: true});
+		let bladeDescription = "", bladeQuest = "";
+		bladeDescription += bladeData[3] + " " + bladeData[4]; // this gets species and class, eg Drow Paladin
+		if (bladeData[5] != "N/A") {
+			bladeDescription += "/" + bladeData[5];
+		}
+		if (bladeData[6] != "N/A") {
+			bladeDescription += "/" + bladeData[6];
+		}
+		if ((bladeData[5] == "N/A") && (bladeData[6] == "N/A")) { // will not trigger for multiclass characters, as their levels should be in the secondary/tertiary class fields, eg, Drow Paladin 5/Warlock 1.  Otherwise the command would gleeefully print out Drow Paladin 5/ Warlock 1 6
+			bladeDescription += " " + bladeData[1];
+		}
+		if (bladeData[13] != "") {
+			bladeQuest = bladeData[13];
+		} else {
+			bladeQuest = "Not currently on a quest";
+		}
+		Embed.setDescription(bladeDescription);
+		Embed.addFields({name: "Current Quest", value: bladeQuest, inline: false});
+		// FETCH ARTWORK URL IF IT EXISTS ON SHEET, OTHERWISE USE THE AVATAR OF THE USER ASSOCIATED WITH THE BLADE (IF AVAILABLE)
+		let artwork = await resolveArtwork(bladeData, users);
+		if (artwork != undefined) {
+			Embed.setThumbnail(artwork);
+		}
+		EmbedArray.push(Embed);
+	//});
+	};
+	return EmbedArray;
+}
+
+function constructViewOutput(bladesData, users) {
+  // need to define player
   let outputString = "";
   bladesData.forEach(bladeData => {
     outputString += bladeData[2] + "\n";
@@ -166,12 +250,58 @@ function constructViewOutput(bladesData, player) {
       outputString += "Null";
     }
     outputString += "\n";
-    outputString += "<@" + Array.from(player.keys())[0] + ">\n";
+    //outputString += "<@" + Array.from(player.keys())[0] + ">\n";
   });
   return outputString;
 }
 
-async function checkForLevelling(bladeData) {
+async function checkForLevellingNG(bladeData) {
+	await new Promise(resolve => setTimeout(resolve, 10000));
+	const bladeNewData = await getData(bladeData[0][2]),
+		Embed = new EmbedBuilder();
+	let progression = await getAllSpreadsheetValues(process.env.spreadsheetId, "Progression");
+	progression.splice([0][0], 1);
+	Embed.setTitle("Status Change Report for " + bladeData[0][2]);
+	let artwork = await resolveArtwork(bladeData[0], null);
+	if (artwork != undefined) {
+		Embed.setThumbnail(artwork);
+	}
+	console.log(bladeData);
+	if (bladeData[0][1] != bladeNewData[0][1]) { // a level up has occurred
+		let levelDataToGoToSheet = [], goldGain = 0;
+		Embed.addFields({name: "Level", value: bladeData[0][1] + " → " + bladeNewData[0][1], inline: false});
+		for (let i = parseInt(bladeData[0][1]); i < parseInt(bladeNewData[0][1]); i++) {
+			let gold = parseInt(progression[i][3].split(" GP")[0]);
+			goldGain += gold;
+			levelDataToGoToSheet.push([bladeNewData[0][2], 0, gold, 0, 0, 0, "Levelling", "Level " + parseInt(i+1)]);
+		}
+		console.log("Total gain: " + goldGain);
+		writeToLedger(levelDataToGoToSheet);
+		bladeNewData[0][8] = parseInt(bladeNewData[0][8]) + goldGain;
+	}
+	if (bladeData[0][12] != bladeNewData[0][12]) { // a rank up has occurred
+		Embed.addFields({name: "Tier", value: bladeData[0][12] + " → " + bladeNewData[0][12], inline: false});
+	}
+	if (bladeData[0][8] != bladeNewData[0][8]) { // gold value has channged
+		Embed.addFields({name: "Gold", value: bladeData[0][8] + " GP → " + bladeNewData[0][8] + " GP", inline: false});
+	}
+	if (bladeData[0][10] != bladeNewData[0][10]) { // downtime value changed
+		Embed.addFields({name: "Downtime", value: bladeData[0][10] + " → " + bladeNewData[0][10], inline: false});
+	}
+	if (bladeData[0][7] != bladeNewData[0][7]) { // rep value changed
+		let value = bladeData[0][7] + " → " + bladeNewData[0][7] + " (";
+		if (bladeNewData[0][1] == 20) {
+	       		value += "MAX)";
+	     	} else {
+     	  		let target = progression[bladeNewData[0][1]][2];
+	       		value += (target - bladeNewData[0][7]) + " from level up.)";
+	     	}
+		Embed.addFields({name: "Reputation", value: value, inline: false});
+	}
+	return Embed;
+}
+
+async function checkForLevelling(bladeData) { // need a new form of this for Embed!!!
   await new Promise(resolve => setTimeout(resolve, 10000)); // waiting 10 seconds to give the sheet a chance to refresh
   const bladeNewData = await getData(bladeData[0][2]);
   let progression = await getAllSpreadsheetValues(process.env.spreadsheetId, "Progression");
@@ -216,24 +346,6 @@ async function checkForLevelling(bladeData) {
   return notification;
 }
 
-/**
-async function prompter(timeLimit, interaction) { // this collects a user's reply after a prompt
-  console.log("Awaiting prompt response...");
-  return new Promise (function (resolve, reject) {
-  const collectorFilter = m => m.author.id == interaction.user.id,
-    collector = interaction.channel.awaitMessages({ filter: collectorFilter, time: timeLimit, max: 1})
-      .then(collected => {
-        console.log("Response received:");
-        const key = Array.from(collected.keys());
-        resolve(collected.get(key[0]).content);
-      }).catch(error => {
-      	console.error(error);
-        resolve(null);
-      });
-  });
-}
-**/
-
 async function collectOneBlade(blades, interaction) { // need to prompt the user to select ONE Blade
   let timeLimit = 60*1000, tries = 3, invalidRemains = true;
   while (invalidRemains) {
@@ -261,9 +373,25 @@ async function collectOneBlade(blades, interaction) { // need to prompt the user
   return null;
 }
 
+async function rosterView(bladeData, interaction) {
+	const users = await interaction.guild.members.fetch();
+	if (outputStyle == "Legacy") {
+		let output = constructViewOutput(bladeData, users);
+		interaction.followUp(output);
+	} else if (outputStyle == "Embed") {
+		let outputEmbed = await constructNGViewOutput(bladeData, users);
+		console.log(outputEmbed);
+		//interaction.followUp({ embeds: [outputEmbed] });
+		interaction.followUp({ embeds: outputEmbed });
+	} else {
+		console.log("Improper output style selected, must be either Legacy or Embed!!!");
+	}
+	return;
+}
+
 async function downtimeSpend(interaction) {
-  const users = await interaction.guild.members.fetch();
-  const blade = interaction.options.getString('blade'),
+  const users = await interaction.guild.members.fetch(),
+    blade = interaction.options.getString('blade'),
     mode = interaction.options.getString('mode');
   console.log(interaction.options);
   let bladeData = await getData(blade);
@@ -283,9 +411,16 @@ async function downtimeSpend(interaction) {
         ledgerOutput = calculateGains(interaction.options.getString('reward'), interaction.options.getString('notes'), bladeData, interaction);
         if (ledgerOutput != null) {
           await writeToLedger([ledgerOutput]); // elements 1 through 5 must be INTEGERS and enclosed in 2 dimensional array [[,]] as it is an array of rows where each row is an array of cells
-          let notification = await checkForLevelling(bladeData);
-          console.log(notification);
-          interaction.followUp(notification);
+          if (outputStyle == "Legacy") {
+          	let notification = await checkForLevelling(bladeData);
+          	console.log(notification);
+          	interaction.followUp(notification);
+          } else if (outputStyle == "Embed") {
+          	let embed = await checkForLevellingNG(bladeData);
+          	interaction.followUp({embeds: [embed]});
+          } else {
+          	console.log("Improper output style selected, must be either Legacy or Embed!!!");
+          }
         } else {
           interaction.followUp("The selected Blade has no weeks of Downtime to spend."); // improve output?
         }
@@ -294,9 +429,8 @@ async function downtimeSpend(interaction) {
       }
       break;
     case ("VIEW"):
-      let player = users.filter(guildmember => guildmember.user.username === bladeData[0][0].substring(1));
-      output = constructViewOutput(bladeData, player);
-      interaction.followUp(output);
+     // move to separate function so it can be shared with roster!!!
+      rosterView(bladeData, interaction);
       break;
     default:
       console.error("Invalid mode set, downtime spend cannot continue");
@@ -337,5 +471,5 @@ module.exports = {
     } else {
       roleTest.warnRole(interaction, "downtime_spending");
     }
-  }, getAllSpreadsheetValues
+  }, getAllSpreadsheetValues, rosterView, getData, writeToLedger
 };

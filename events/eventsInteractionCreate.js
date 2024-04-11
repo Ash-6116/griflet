@@ -8,10 +8,6 @@ module.exports = {
 
     const command = interaction.client.commands.get(interaction.commandName);
 
-    if (command === 'ping') {
-      console.log("Pong Pong");
-    }
-
     if (!command) {
       console.error(`No command matching ${interaction.commandName} was found.`);
       return;

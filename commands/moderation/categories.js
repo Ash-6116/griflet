@@ -1,7 +1,8 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { testUser } = require('../../shared_classes/user.js');
 const { mirror } = require('../../shared_classes/output.js');
 const roleTest = require('../../shared_classes/roleTest.js');
+const outputStyle = process.env.outputStyle;
 
 /**
  * Neph's recommended steps:
@@ -179,6 +180,39 @@ function filterOnMonths(timestamp, period) {
   }
 }
 
+async function renderNGOutput(interaction, output) {
+	const size = 25, categories = Array.from(output.keys()),
+		channels = await interaction.guild.channels.fetch(),
+		period = interaction.options.getString('period');
+	let categoriesPerEmbed = [], embedCollection = [];
+	for (let i=0; i < categories.length; i+= size) {
+		categoriesPerEmbed.push(categories.slice(i, i+size));
+	}
+	for (let i=0; i < categoriesPerEmbed.length; i++) { // need to do it this way in order to get i of LENGTH in titles!
+		const embed = new EmbedBuilder()
+			.setTitle("Categories Output (" + (1+i) + "/" + categoriesPerEmbed.length + ")");
+		categoriesPerEmbed[i].forEach(category => {
+			let latestMessage = output.get(category);
+			if (latestMessage === null) {
+				console.log(`${category} contained no messages!`);
+			} else if (latestMessage.length === 2) {
+				let newest = latestMessage[0],
+					channel = channels.get(newest.channelId),
+					categoryString;
+				if (filterOnMonths(newest.createdTimestamp, period)) {
+					categoryString = `Last messaage written by: ${testUser(newest.author)}\n\ton: ${resolveDate(newest.createdTimestamp)}\n\tin: ${channel.name}`
+				}
+				if (categoryString != undefined) { // add as field
+					embed.addFields({name: category, value: categoryString, inline: false});
+				}
+			}
+		});
+		embedCollection.push(embed);
+	}
+	mirror(undefined, interaction, embedCollection); // interaction was passed above as a variable
+	return;
+}
+
 function renderOutput(interaction, output) {
   // output will be a MAP containing categories as a key and each categories' newest message if it exists, or null if the category has no messages
   /**
@@ -218,7 +252,7 @@ function renderOutput(interaction, output) {
     }
   });
   finalOutput.push(finalOutputString); // to catch any strings that are less than 2000 characters!!
-  mirror(finalOutput, interaction); // change this to outputMirror!!! - disabled during testing
+  mirror(finalOutput, interaction);
   return;
 }
 
@@ -236,7 +270,13 @@ module.exports = { resolveDate,
       const categoryMap = await categoryList(interaction).then(interaction.editReply('Categories list generated, proceeding with identifying last messages per category.  This might take a while for large servers with many channels!'));
       await v14messageLast(categoryMap).then(output => {
         interaction.editReply(`Each category now has a last message object, rendering output`);
-        renderOutput(interaction, output);
+	if (outputStyle == "Legacy") {
+        	renderOutput(interaction, output); // legacy output
+        } else if (outputStyle == "Embed") {
+        	renderNGOutput(interaction, output); // embed output
+        } else {
+        	console.log("Improper output style selected, must be either Legacy or Embed!!!");
+        }
       });
     } else {
       roleTest.warnRole(interaction, "categories");

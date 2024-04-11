@@ -1,5 +1,5 @@
 const { Events } = require('discord.js');
-const standardResponses = require('./standardResponses.json');
+//const standardResponses = require('./standardResponses.json');
 
 module.exports = {
 	name: Events.MessageCreate,
