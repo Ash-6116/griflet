@@ -383,13 +383,13 @@ async function NGcouncilAlert(alertPackage, usableChannels, interaction) {
 					} else {
 						console.log("Oops, something went wrong with: " + caravan[1]);
 						if (alertsAllGroups.has("council")) {
-							players = alertsAllGroups.get("council").get(caravan[1]);
-							if (players != undefined) {
-								players.get("blades").forEach(blade => {
+							let caravanPlayers = alertsAllGroups.get("council").get(caravan[1]);
+							if (caravanPlayers != undefined) {
+								caravanPlayers.get("blades").forEach(blade => {
 									bladeString += "<@" + blade.id + "> | ";
 								});
-								if (players.has("arrows")) {
-									players.get("arrows").forEach(arrow => {
+								if (caravanPlayers.has("arrows")) {
+									caravanPlayers.get("arrows").forEach(arrow => {
 										arrowString += "<@" + arrow.id + "> | ";
 									});
 								}
@@ -404,8 +404,8 @@ async function NGcouncilAlert(alertPackage, usableChannels, interaction) {
 						}
 					}
 				}
+				filledEmbed.addFields({ name: caravan[0] + ": " + caravan[1], value: filledString + "\n" + bladeString + "\n" + arrowString, inline: false });
 			}
-			filledEmbed.addFields({ name: caravan[0] + ": " + caravan[1], value: filledString + "\n" + bladeString + "\n" + arrowString, inline: false });
 		});
 		outputEmbedArray.push(filledEmbed);
 	}
