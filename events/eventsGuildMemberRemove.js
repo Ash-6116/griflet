@@ -15,6 +15,14 @@ module.exports = {
 		embed.setThumbnail(member.user.displayAvatarURL());
 		//channels.find(channel => channel.name === "bot-stuff").send("**__" + member.user.username + " has left the server:__**\n" + processOutput(result_of_checks));
 		channels.find(channel => channel.name === "bot-stuff").send({ embeds: [embed] });
+		// 29/7/24 - Write the user's name into a file to be retrieved on Sunday during downtime
+		fs.appendFile("leavers.txt", member.user.username, (err) => {
+			if (err) {
+				console.log(err);
+			} else {
+				console.log("Log File Updated");
+			}
+		});
 		// member.guild.channels should exist in member object for those leaving the server
 		/**
 		User {
