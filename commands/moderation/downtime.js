@@ -679,7 +679,7 @@ async function downtimeRoutine(interaction) {
 		routine = interaction.options.getString('routine'),
 		messageForBlades = interaction.options.getString('message'),
 		options = interaction.options.getString('options');
-	let strings = "",
+	let strings = { }, // empty Object to prevent errors being thrown
 		councilAuthorisation = false;
 	if (fs.existsSync('strings.txt')) {
 		strings = JSON.parse(fs.readFileSync('strings.txt', 'utf8'));
@@ -706,7 +706,11 @@ async function downtimeRoutine(interaction) {
 	return;
 }
 
-module.exports = {
+module.exports = { checkArrowIsOnlyOnRunning,
+	checkUniqueReactions,
+	gatherQuestBoard,
+	gatherRunningCaravans,
+	vassals,
 	data: new SlashCommandBuilder()
 		.setName('downtime')
 		.setDescription('Run all or parts of the Downtime routine for CitM server')

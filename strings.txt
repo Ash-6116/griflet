@@ -7,6 +7,28 @@
 		"halloween": "As a special treat from the council, there's been a Halloween Giveaway.  Each Blade on the active roster has received an item and some magic candy.  Each candy comes as a pair so you can share if you want to (though if trading please let the mods know so we can keep track of who has what in the ledger).\n\nAs usual, if you are on a quest you cannot acknowledge the new item as part of that quest and anything with rolled charges comes fully charged as a perk of the Guild Shoppe. \n\nPlease find your gifts in the 'ledger' tab of the Guild Roster (https://tinyurl.com/BladesLedger) and Happy Halloween",
 		"winter_holiday": "In addition, the Council have arranged for presents to be distributed to the Blades as it's the winter holidays.\n\nAs usual, if you are on a quest you cannot acknowledge the new item as part of that quest and anything with rolled charges comes fully charged as a perk of the Guild Shoppe. \n\nPlease find your gifts in the 'ledger' tab of the Guild Roster (https://tinyurl.com/BladesLedger)\n\nCharacter wise the objects are found wrapped up in festive wrapping paper in their rooms with a small note in careful handwriting which reads: 'Happy Holidays from the Council.  This gift is but a small token of our appreciation for all you do in our name -- hopefully it will help in adventures to come.'"
 	},
+	"reaction_alerts": {
+		"already_running": {
+			"title": "Quest Is Already Running",
+			"description": "Apologies, the quest you have reacted to is already running, so I have removed your reaction to it.\n\nWe rerun quests after they finish, so you won't miss out, just react to the quest when its emptied out."
+		},
+		"arrow": {
+			"title": "Arrow Reaction On Quest Not Currently Running",
+			"description": "Hi there, the bow_and_arrows emoji is to signify that an Arrow has been inserted into a quest caravan to fill up a space on a quest already in progress.  Your reaction was on a quest that is not currently in a caravan, therefore it has been deleted."
+		},
+		"duplicates": {
+			"title": "Reaction On Multiple Quests",
+			"description": "Hi there, as a general rule of Blades, players can only leave their reaction on *__one__* quest at a time.  I have detected that you left a reaction on more than one quest, so I removed your reaction to the quest mentioned in the title of this Embed."
+		},
+		"full": {
+			"title": "Quest Already Filled",
+			"description": "Hi there, just to let you know that the quest mentioned above is already filled and is either running or awaiting a DM.  Each caravan can have **four** players, so I have removed your reaction.  However, we rerun quests frequently, so you don't need to worry about missing out.  Just need to wait until the quest becomes available again."
+		},
+		"invalid": {
+			"title": "Incorrect Reaction To Quest",
+			"description": "Hi, just to let you know that on quest-board, the only valid reaction for most Blades members is the crossed_swords emoji.  As your reaction was not crossed_swords, I have deleted it.\n\nIf you would like to sign up to this quest, please repost a crossed_swords reaction to its post in quest-board.  Thanks"
+		}
+	},
 	"vassals_alert": {
 		"gratitude": "  Many thanks.",
 		"party": "The party with be: ",
