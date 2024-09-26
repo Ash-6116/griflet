@@ -1,0 +1,20 @@
+{
+	"announcement": {
+		"activity_check": "We will be doing an activity check next week.  Anyone who has been inactive over 3 months, has over 20 weeks of Downtime and isn't currently on an active quest will be moved to the inactive roster.  Activity is any amount of posting in a Blades channel or just posting 'hi' in the viewing area.",
+		"blades_anniversary": "Happy Blades anniversary!!! As its the anniversary of the current Blades of Obsidian opening for business the council have decided to distribute gifts in honour of the anniversary along with special candy.  Everyone receives two of one particular type of candy, so you can share it if you want to with another guild mate.\n\nAs usual, if you are on a quest you cannot acknowledge the new item as part of that quest and anything with rolled charges comes fully charged as a perk of the Guild Shoppe. \n\nPlease find your gifts in the 'ledger' tab of the Guild Roster (https://tinyurl.com/BladesLedger)",
+		"downtime_applied": "The weekly downtime has been applied.  As a reminder you can only spend downtime or shop if you are not in a quest or if your quest has not left the guild hall.",
+		"server_anniversary": "Happy server anniversary!!! As its the anniversary of the server starting up he council have decided to distribute gifts in honour of the anniversary along with special candy.  Everyone receives two of one particular type of candy, so you can share it if you want to with another guild mate.\n\nAs usual, if you are on a quest you cannot acknowledge the new item as part of that quest and anything with rolled charges comes fully charged as a perk of the Guild Shoppe. \n\nPlease find your gifts in the 'ledger' tab of the Guild Roster (https://tinyurl.com/BladesLedger)",
+		"halloween": "As a special treat from the council, there's been a Halloween Giveaway.  Each Blade on the active roster has received an item and some magic candy.  Each candy comes as a pair so you can share if you want to (though if trading please let the mods know so we can keep track of who has what in the ledger).\n\nAs usual, if you are on a quest you cannot acknowledge the new item as part of that quest and anything with rolled charges comes fully charged as a perk of the Guild Shoppe. \n\nPlease find your gifts in the 'ledger' tab of the Guild Roster (https://tinyurl.com/BladesLedger) and Happy Halloween",
+		"winter_holiday": "In addition, the Council have arranged for presents to be distributed to the Blades as it's the winter holidays.\n\nAs usual, if you are on a quest you cannot acknowledge the new item as part of that quest and anything with rolled charges comes fully charged as a perk of the Guild Shoppe. \n\nPlease find your gifts in the 'ledger' tab of the Guild Roster (https://tinyurl.com/BladesLedger)\n\nCharacter wise the objects are found wrapped up in festive wrapping paper in their rooms with a small note in careful handwriting which reads: 'Happy Holidays from the Council.  This gift is but a small token of our appreciation for all you do in our name -- hopefully it will help in adventures to come.'"
+	},
+	"vassals_alert": {
+		"gratitude": "  Many thanks.",
+		"party": "The party with be: ",
+		"prefix": "The following ",
+		"prefix_plural": "quests have been filled, ",
+		"prefix_singular": "quest has been filled, ",
+		"suffix": "Is there anyone free who can volunteer to take ",
+		"suffix_plural": "these quests?",
+		"suffix_singular": "this quest?"
+	}
+}
