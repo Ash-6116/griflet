@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {Client, Collection, Events, GatewayIntentBits, Partials } = require('discord.js');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], partials: [ Partials.GuildMember ] }); // Create a new client instance
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessageReactions], partials: [ Partials.GuildMember, Partials.Channel, Partials.Message, Partials.Reaction ] }); // Create a new client instance
 client.cooldowns = new Collection();
 client.commands = new Collection(); // Load command files
 
