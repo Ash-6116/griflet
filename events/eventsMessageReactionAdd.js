@@ -7,8 +7,16 @@ const { Events, EmbedBuilder } = require('discord.js'),
 **/
 
 async function deleteReaction(message, reaction, user) { // could reuse this as part of the eventsGuildMemberRemove event
-	const messageResolved = await message.reactions.resolve(reaction);
-	await messageResolved.remove(user.id);
+	const messageReactions = await message.reactions;
+	if (messageReactions != undefined) {
+		const messageResolved = await messageReactions.resolve(reaction);
+		try {
+			await messageResolved.remove(user.id);
+		} catch (error) {
+			console.log("OOPS");
+			console.log(error);
+		}
+	}
 	return;
 }
 
@@ -26,8 +34,12 @@ async function errorChecking(reaction, user, strings) {
 		alerts = strings.reaction_alerts;
 		warningChannel = guildChannels.get(Array.from(guildChannels.filter(channel => channel.name === "viewing-area").keys())[0]);
 	if (guildChannels.get(reaction.message.channelId).name === "quest-board") {
-		const questMessage = await guildChannels.get(reaction.message.channelId).messages.fetch(reaction.message.id),
-			quest_name = questMessage.content.split("\n")[0];
+		let questMessage = await guildChannels.get(reaction.message.channelId).messages.fetch(reaction.message.id);
+		let questMessageArray = questMessage.content.split("\n");
+		if (questMessageArray[0] === "---") {
+			questMessage.splice(0, 1);
+		}
+		const quest_name = questMessageArray[0].replace(/\*/g, "");
 		switch (true) {
 		// 1 - check if it is a valid reaction (crossed_swords or bow_and_arrows), if it isn't, Griflet should warn the user in viewing-area
 			case (!(reaction._emoji.name == crossed_swords || reaction._emoji.name == bow_and_arrows)) :
