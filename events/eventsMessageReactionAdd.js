@@ -12,9 +12,10 @@ async function deleteReaction(message, reaction, user) { // could reuse this as 
 		const messageResolved = await messageReactions.resolve(reaction);
 		try {
 			await messageResolved.remove(user.id);
+			console.log("Reaction removed successfully");
 		} catch (error) {
-			console.log("OOPS");
-			console.log(error);
+			console.errpr("Something prevented reaction from being removed successfully");
+			console.error(error);
 		}
 	}
 	return;
@@ -63,15 +64,19 @@ async function errorChecking(reaction, user, strings) {
 				console.log("Finished gathering, starting checks...");
 				switch (true) {
 					case (questFromBoard.hasOwnProperty("error")) :
+						console.log("Detected that quest" + quest_name + " has a detected error");
 						if (questFromBoard.error.has("duplicatedReaction")) {
 							if (questFromBoard.error.get("duplicatedReaction").join().includes(user.username)) {
 								// user left reactions elsewhere, remove this one!!!
 								//warnUser(warningChannel, user, ["Reaction On Multiple Quests", "Hi there, as a general rule of Blades, players can only leave their reaction on *__one__* quest at a time.  I have detected that you left more than one reaction, so your reaction to " + quest_name + " has been removed."]);
+								console.log("Duplicate error detected, warning user...");
 								warnUser(warningChannel, user, [alerts.duplicates.title + ": " + quest_name, alerts.duplicates.description]);
+								console.log("Attempting removal of duplicate reaction");
 								deleteReaction(questMessage, reaction, user);
 							}
 						}
 						if (questFromBoard.error.has('arrowsOnNotRunning')) {
+							console.log("Detected Arrow on non-running quest " + quest_name + ", taking corrective action.");
 							// User left an arrows reaction on a quest that isn't running, remove it
 							if (questFromBoard.error.get('arrowsOnNotRunning').has(user.id)) {
 								warnUser(warningChannel, user, [alerts.arrow.title + ": " + quest_name, alerts.arrow.description]);
