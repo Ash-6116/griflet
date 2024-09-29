@@ -52,8 +52,11 @@ async function gatherQuestBoard(interaction) {
 	for (let k = 0; k < messageKeys.length; k++) {
 		const item = questBoard.get(messageKeys[k]);
 		if (item.content.length > 1) {
-			const itemSplit = item.content.split(/\r?\n/),
-				name = itemSplit[0],
+			const itemSplit = item.content.split(/\r?\n/);
+			if (itemSplit[0] === "---") { // need t remove this element and move everything else down
+				itemSplit.splice(0, 1); // remove only one element
+			}
+			const name = itemSplit[0].replace(/\*/g, ""), // remove bold formatting
 				reactions = item.reactions.cache,
 				reactionsKeys = Array.from(reactions.keys());
 			let reactionsReformatted = new Map();
@@ -66,10 +69,11 @@ async function gatherQuestBoard(interaction) {
 				reactionsReformatted.set(reactionsKeys[r], reactionReformatted);
 			}
 			let quest = { name: name,
-				description: itemSplit[4].split("Description: ")[1],
+				description: itemSplit[4].split("**Description:** ")[1],
 				reactions: reactionsReformatted,
-				rewards: itemSplit[3].split("Rewards: ")[1],
-				tier: itemSplit[1].split("Tier:")[1].trim()};
+				rewards: itemSplit[3].split("**Rewards:** ")[1],
+				tier: itemSplit[1].split("Tier:")[1].trim().replace(/\*/g, "")};
+			console.log(quest);
 			quests.push(quest);
 		}
 	}
@@ -83,7 +87,9 @@ async function gatherRunningCaravans(caravans, questBoard) {
 	// If possible, add the list of players mentioned to the quest as well.
 	const categoryId = Array.from (caravans.keys() );
 	for (let index = 0; index < caravans.size; index++) {
-		let qcs = caravans.get(categoryId[index]).guild.channels.cache.filter(channel => channel.parentId === caravans.get(categoryId[index]).id);
+		let qcs = caravans.get(categoryId[index]).guild.channels.cache.filter(channel => channel.parentId === caravans.get(categoryId[index]).id && !channel.name.includes("-ooc"));
+		qcs.delete('474382720739573779');
+		// NEED TO REMOVE BRIEFING-ROOM
 		const qc_id = Array.from(qcs.keys());
 		for(let c = 0; c < qcs.size; c++) {
 			const pinnedPost = await qcs.get(qc_id[c]).messages.fetchPinned();
@@ -92,14 +98,14 @@ async function gatherRunningCaravans(caravans, questBoard) {
 				emptyCaravans.push(qcs.get(qc_id[c]).name);
 			} else {
 				pinnedPost.forEach(pin => {
-					const DM = pin.content.substring(
-						pin.content.indexOf("DM: ") + 3,
-						pin.content.lastIndexOf("\n")).trim(),
-						title = pin.content.split("\n")[0],
+					const pinSplit = pin.content.split("\n"),
+						DM = pinSplit[5].substring(pinSplit[5].indexOf("@")+1, pinSplit[5].indexOf(">"));
+						title = pinSplit[0].replace(/\*/g, ""),
 						date = resolveDate(pin.createdTimestamp);
+					console.log("Title: " + title + "  DM: " + DM);
 					// now need to find the entry for the quest in questBoard and add to it
-					// let caravanFromQuestBoard = questBoard.get(title),
-					let caravanFromQuestBoard = questBoard.filter(quest => quest.name == title)[0],
+					console.log(pin.content);
+					let caravanFromQuestBoard = questBoard.filter(quest => quest.name == title)[0], // error
 						pinnedPlayerIDs = pin.content.split("Players: ")[1].split(", ");
 					// Clean up pinnedPlayerIDs to remove <@ and > from each id, leaving behind only the id number
 					for (let p = 0; p < pinnedPlayerIDs.length; p++) {
@@ -107,9 +113,7 @@ async function gatherRunningCaravans(caravans, questBoard) {
 							pinnedPlayerIDs[p].indexOf("<@")+2,
 							pinnedPlayerIDs[p].indexOf(">"));
 					}
-					caravanFromQuestBoard.DM = DM.substring(
-						DM.indexOf("@") +1,
-						DM.indexOf(">"));
+					caravanFromQuestBoard.DM = DM;
 					caravanFromQuestBoard.caravan = qcs.get(qc_id[c]).name.split("quest-caravan-")[1];
 					caravanFromQuestBoard.pinnedPlayerIDs = pinnedPlayerIDs; // need to try to clean this array up
 					caravanFromQuestBoard.date = date;
@@ -375,7 +379,7 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 				runningString += "<@" + user.id + ">, "; // as above
 				runningLog += user.username + "\n";
 			});
-			runningString = runningString.slice(0, -2);
+			runningString = runningString.slice(0, -2) + "\n\n";
 		});
 		logForFile += runningLog + "\n";
 		runningEmbed.setDescription(runningString);
