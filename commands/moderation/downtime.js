@@ -308,6 +308,14 @@ async function dailyRoutine(interaction, guildChannels, guildRoles) {
 	return [questBoard, emptyCaravans]; // return questBoard and use this function as a daily command so it can be exported to a reactions autorun?
 }
 
+function sortByCaravan(a, b) {
+	const questA = parseInt(a.caravan);
+	const questB = parseInt(b.caravan);
+	if (questA > questB) return 1;
+	if (questB > questA) return -1;
+	return 0;
+}
+
 async function councilAlert(questBoard, guildChannels, interaction, emptyCaravans, rosterOutput) {
 	/**
 	 * This function needs a total overhaul from NGcounilAlert and councilAlert from Griflet v2.0
@@ -366,21 +374,19 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 		const runningEmbed = new EmbedBuilder()
 			.setTitle("Running Caravans"),
 			bladesEmoji = '⚔️';
-		let runningString = "", runningLog = "";
+		let runningString = "";
 		logForFile += "Running Caravans\n";
-		questBoard.filter(quest => quest.hasOwnProperty('caravan')).forEach(quest => {
+		questBoard.filter(quest => quest.hasOwnProperty('caravan')).sort(sortByCaravan).forEach(quest => {
 			runningString += "**quest-caravan-" + quest.caravan + ":\n	Tier: " + quest.tier + " - " + quest.name + "**\n";
 			runningString += "DM:  <@" + quest.DM + ">\n"; // TODO - might need a different way to ping people
 			runningString += "Date started: " + quest.date + "\n";
 			runningString += "Players: ";
-			runningLog += runningString;
 			quest.reactions.get(bladesEmoji).users.forEach(user => {
 				runningString += "<@" + user.id + ">, "; // as above
-				runningLog += user.username + "\n";
 			});
 			runningString = runningString.slice(0, -2) + "\n\n";
 		});
-		logForFile += runningLog + "\n";
+		logForFile += runningString + "\n";
 		runningEmbed.setDescription(runningString);
 		outputEmbedArray.push(runningEmbed);
 	}
