@@ -11,7 +11,7 @@ async function deleteReaction(message, reaction, user) { // could reuse this as 
 	if (messageReactions != undefined) {
 		const messageResolved = await messageReactions.resolve(reaction);
 		try {
-			await messageResolved.remove(user.id);
+			await messageResolved.users.remove(user.id);
 			console.log("Reaction removed successfully");
 		} catch (error) {
 			console.errpr("Something prevented reaction from being removed successfully");
