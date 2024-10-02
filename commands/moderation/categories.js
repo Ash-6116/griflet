@@ -256,7 +256,22 @@ function renderOutput(interaction, output) {
   return;
 }
 
-module.exports = { resolveDate,
+async function categories(interaction) {
+	const categoryMap = await categoryList(interaction).then(interaction.editReply('Categories list generated, proceeding with identifying last messages per category.  This might take a while for large servers with many channels!'));
+	await v14messageLast(categoryMap).then(output => {
+		interaction.editReply(`Each category now has a last message object, rendering output`);
+		if (outputStyle == "Legacy") {
+			renderOutput(interaction, output); // legacy output
+		} else if (outputStyle == "Embed") {
+			renderNGOutput(interaction, output); // embed output
+		} else {
+			console.log("Improper output style selected, must be either Legacy or Embed!!!");
+		}
+	});
+	return;
+}
+
+module.exports = { categories, resolveDate,
   data: new SlashCommandBuilder()
     .setName('categories')
     .setDescription('Provides information about server categories')
@@ -267,17 +282,7 @@ module.exports = { resolveDate,
   async execute(interaction) {
     if (roleTest.roleTest(interaction)) {
       await interaction.deferReply();
-      const categoryMap = await categoryList(interaction).then(interaction.editReply('Categories list generated, proceeding with identifying last messages per category.  This might take a while for large servers with many channels!'));
-      await v14messageLast(categoryMap).then(output => {
-        interaction.editReply(`Each category now has a last message object, rendering output`);
-	if (outputStyle == "Legacy") {
-        	renderOutput(interaction, output); // legacy output
-        } else if (outputStyle == "Embed") {
-        	renderNGOutput(interaction, output); // embed output
-        } else {
-        	console.log("Improper output style selected, must be either Legacy or Embed!!!");
-        }
-      });
+      await categories(interaction);
     } else {
       roleTest.warnRole(interaction, "categories");
     }

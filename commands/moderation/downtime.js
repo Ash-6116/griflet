@@ -8,7 +8,7 @@ const { EmbedBuilder, SlashCommandBuilder } = require('discord.js'),
 	{ mirror, specificMirror } = require('../../shared_classes/output.js'),
 	{ prompter } = require('../../shared_classes/prompter.js'), // Gives access to the prompter function for councilAlert
 	outputStyle = process.env.outputStyle, // sets either Legacy or Embed
-	{ resolveDate } = require('./categories.js'), // Gives access to RESOLVEDATE function
+	{ resolveDate, categories } = require('./categories.js'), // Gives access to RESOLVEDATE function and categories function
 	{ roleTest, warnRole } = require('../../shared_classes/roleTest.js'), // ensures the user has the appropriate role for running the command
 	{ testUser } = require('../../shared_classes/user.js');
 
@@ -578,14 +578,26 @@ function prompt(guildChannels) {
 	return;
 }
 
+function isFirstSunday() {
+	const current_date = new Date();
+	let rolling_date = new Date(current_date.getFullYear(), current_date.getMonth(), 1); // roll to the first day of the month...
+	if (rolling_date.getDay() != 0) {  // if rolling_date is not on a SUNDAY, roll forward to next SUNDAY
+		// need to add days
+		rolling_date.setDate(rolling_date.getDate() + (7-rolling_date.getDay()));
+	}
+	if (current_date.getMonth() == rolling_date.getMonth() && current_date.getDate() == rolling_date.getDate()) {
+		return true;
+	}
+	return false;
+}
+
 function isLastSunday() {
 	const current_date = new Date();
 	let rolling_date = new Date(current_date.getFullYear(), current_date.getMonth() +1, 0); // roll forward to the last day of the month...
 	if (rolling_date.getDay() != 0) { // if rolling_date is not on a SUNDAY, roll back to previous SUNDAY
 		rolling_date.setDate(rolling_date.getDate() - rolling_date.getDay());
 	}
-	rolling_date = current_date; // set rolling_date to current_date as a test
-	if (current_date == rolling_date) {
+	if (current_date.getMonth() == rolling_date.getMonth() && current_date.getDate() == rolling_date.getDate()) {
 		return true;
 	}
 	return false;
@@ -739,6 +751,10 @@ module.exports = { checkArrowIsOnlyOnRunning,
 		if (roleTest(interaction)) {
 			await interaction.deferReply();
 			await downtimeRoutine(interaction);
+			console.log(isLastSunday());
+			if (isFirstSunday()) {
+				categories(interaction); // run categories routine on first Sunday of the month
+			}
 		} else {
 			warnRole(interaction, "downtime");
 		}
