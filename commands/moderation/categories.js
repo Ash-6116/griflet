@@ -35,7 +35,7 @@ function filterOnMonths(timestamp, period) {
 }
 
 function renderOutput(processedCategories, guildChannels, interaction) {
-	const size = 25, period = interaction.options.getString('period');
+	const size = 20, period = interaction.options.getString('period');
 	let categoriesPerEmbed = [], embedCollection = [];
 	for (let i = 0; i < processedCategories.length; i+= size) {
 		categoriesPerEmbed.push(processedCategories.slice(i, i+size));
@@ -46,16 +46,18 @@ function renderOutput(processedCategories, guildChannels, interaction) {
 		categoriesPerEmbed[i].forEach(category => {
 			let categoryString = " ", categoryTitle = category.name;
 			const lastChannel = category.channels.slice(-1)[0];
-			if (lastChannel.lastMessage != null) {
-				if (filterOnMonths(lastChannel.lastMessage.createdTimestamp, period)) {
-					categoryString += "(Roles: " + lastChannel.roles.toString() + ")\n";
-					categoryString += "Last message written by: " + lastChannel.lastMessage.author.username + "\non: " + resolveDate(lastChannel.lastMessage.createdTimestamp) + "\nin: " + lastChannel.name;
+			if (lastChannel != null) {
+				if (lastChannel.lastMessage != null) {
+					if (filterOnMonths(lastChannel.lastMessage.createdTimestamp, period)) {
+						categoryString += "(Roles: " + lastChannel.roles.toString() + ")\n";
+						categoryString += "Last message written by: " + lastChannel.lastMessage.author.username + "\non: " + resolveDate(lastChannel.lastMessage.createdTimestamp) + "\nin: " + lastChannel.name;
+						if (category.created != null) {
+							categoryTitle += "\n(Created: " + resolveDate(category.created) + ")";
+						}
+						embed.addFields({name: categoryTitle, value: categoryString, inline: false});
+					}
 				}
 			}
-			if (category.created != null) {
-				categoryTitle += "\n(Created: " + resolveDate(category.created) + ")";
-			}
-			embed.addFields({name: categoryTitle, value: categoryString, inline: false});
 		});
 		embedCollection.push(embed);
 	}
