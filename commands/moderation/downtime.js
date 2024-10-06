@@ -720,7 +720,7 @@ async function downtimeRoutine(interaction) {
 		case (options == null || options != "no prompt") && (councilAuthorisation || routine == "prompt"):
 			prompt(guildChannels);
 		case (options == null || options != "no ledger") && (councilAuthorisation || routine == "ledger"):
-			//ledger.main(process.env.spreadsheetId, "Roster");
+			ledger.main(process.env.spreadsheetId, "Roster");
 		default: // do nothing
 			break;
 	}
@@ -752,9 +752,11 @@ module.exports = { checkArrowIsOnlyOnRunning,
 			await interaction.deferReply();
 			await downtimeRoutine(interaction);
 			console.log(isLastSunday());
+			/**
 			if (isFirstSunday()) {
 				categories(interaction); // run categories routine on first Sunday of the month
 			}
+			**/
 		} else {
 			warnRole(interaction, "downtime");
 		}
