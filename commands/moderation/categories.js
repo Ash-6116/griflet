@@ -34,6 +34,30 @@ function filterOnMonths(timestamp, period) {
   }
 }
 
+function renderLogfile(processedCategories, period) {
+	let outputString = "Categories Output for " + new Date() + "\n---	---\n";
+	processedCategories.forEach(category => {
+		const lastChannel = category.channels.slice(-1)[0];
+		if (lastChannel != null) {
+			if (lastChannel.lastMessage != null) {
+				if (filterOnMonths(lastChannel.lastMessage.createdTimestamp, period)) {
+					outputString += category.name + ":\n(Created: " + resolveDate(category.created) + ")\n";
+					outputString += "(Roles: " + lastChannel.roles.toString() + ")\n";
+					outputStirng += "Last message written by: " + lastChannel.lastMessage.author.username + "\non: " + resolveDate(lastChannel.lastMessage.createdTimestamp) + "\nin: " + lastChannel.name + "\n\n";
+				}
+			}
+		}
+	});
+	fs.appendFile("Logging.txt", outputString, (err) => { // Write to the log file
+		if (err) {
+			console.log(err);
+		} else {
+			console.log("Categories log file written");
+		}
+	});
+	return;
+}
+
 function renderOutput(processedCategories, guildChannels, interaction) {
 	const size = 20, period = interaction.options.getString('period');
 	let categoriesPerEmbed = [], embedCollection = [];
@@ -131,6 +155,7 @@ async function categories(interaction) {
 	processedCategories = sortChannelsForCategory(processedCategories);
 	interaction.editReply('Channels parsed, rendering output...');
 	renderOutput(processedCategories, guildChannels, interaction);
+	renderLogfile(processedCategories, interaction.options.getString("period"));
 	return;
 }
 
