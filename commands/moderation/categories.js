@@ -69,23 +69,10 @@ function sortByDate(a, b) {
 	if (a.lastMessage == null && b.lastMessage == null) return 0;
 	if (a.lastMessage != null && b.lastMessage == null) return 1;
 	if (a.lastMessage == null && b.lastMessage != null) return -1;
-	const dateA = new Date(a.lastMessage.date), dateB = new Date(b.lastMessage.date);
+	const dateA = new Date(a.lastMessage.createdTimestamp), dateB = new Date(b.lastMessage.createdTimestamp);
 	if (dateA > dateB) return 1;
 	if (dateB > dateA) return -1;
 	return 0;
-}
-
-function checkSort(outputCategories) {
-	outputCategories.forEach(category => {
-		console.log("Category: " + category.name + "\nCreated: " + resolveDate(category.creationDate));
-		if (category.channels != null) {
-			const lastMessageChannel = category.channels.slice(-1)[0];
-			console.log(lastMessageChannel.name + "\n" + resolveDate(lastMessageChannel.lastMessage.date) + "\n" + lastMessageChannel.lastMessage.user.username);
-		} else {
-			console.log("No messages posted");
-		}
-	});
-	return;
 }
 
 async function getLastMessage(guildChannels, guildRoles) {
@@ -123,11 +110,11 @@ function sortChannelsForCategory(processedCategories) {
 	processedCategories.forEach(category => {
 		console.log(category.name);
 		console.log("---	---");
-		category.channels = category.channels.sort(sortByDate);
+		//category.channels = category.channels.sort(sortByDate); // error might've been here
+		category.channels.sort(sortByDate);
 		category.channels.forEach(channel => {
-			console.log(channel.name);
 			if (channel.lastMessage != null) {
-				console.log("	" + resolveDate(channel.lastMessage.createdTimestamp));
+				console.log(channel.name + "	" + resolveDate(channel.lastMessage.createdTimestamp));
 			}
 		});
 		console.log("---	---");

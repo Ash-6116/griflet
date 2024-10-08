@@ -724,6 +724,10 @@ async function downtimeRoutine(interaction) {
 		default: // do nothing
 			break;
 	}
+	if (isFirstSunday()) { // triggers on first Sunday of the month
+		interaction.options._hoistedOptions = [{ name: 'period', type: 3, value: '3' }]; // setting period to 3 months for categories
+		categories(interaction);
+	}
 	return;
 }
 
@@ -751,12 +755,6 @@ module.exports = { checkArrowIsOnlyOnRunning,
 		if (roleTest(interaction)) {
 			await interaction.deferReply();
 			await downtimeRoutine(interaction);
-			console.log(isLastSunday());
-			/**
-			if (isFirstSunday()) {
-				categories(interaction); // run categories routine on first Sunday of the month
-			}
-			**/
 		} else {
 			warnRole(interaction, "downtime");
 		}
