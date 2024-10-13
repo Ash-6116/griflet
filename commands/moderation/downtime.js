@@ -334,7 +334,6 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 	let logForFile = "Downtime Log:\n" + Date() + "\nLeft Server: ";
 	if (fs.existsSync('leavers.txt')) { // people left the server this week
 		logForFile += fs.readFileSync('leavers.txt', 'utf8');
-		// TODO remove leavers file
 		fs.unlink('leavers.txt', (err) => {
 			if (err) {
 				console.log(err);
@@ -455,7 +454,8 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 					break;
 				case quest.error.has('missingUsers'):
 					console.log("Found missing users");
-					console.log(quest.error.get('missingUsers')); // TODO going to have to work this out another way as it is not firing off the test data
+					console.log(quest.error.get('missingUsers'));
+					// TODO - populate
 					break;
 				case quest.error.has('invalidReaction'):
 					invalidReactionString += quest.name + "\n";
