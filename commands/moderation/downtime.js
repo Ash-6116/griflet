@@ -526,6 +526,7 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 			interaction.followUp("No errors detected, proceeding with announcement");
 			return true;
 		}
+		console.log("Awaiting promise...");
 		await new Promise(resolve => setTimeout(resolve, 1000)); // waiting 1 second to give Discord a chance to refresh
 		interaction.followUp("Would you like to run the whole announcement routine, or only have output in bot-stuff as a log? Y/N");
 		let collection = await prompter(120000, interaction); // should return TRUE if a reply is received within 2 minutes to indicate the announcements can go ahead, FALSE if the timer runs out or if the reply is NO.
