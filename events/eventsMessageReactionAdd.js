@@ -71,7 +71,7 @@ async function errorChecking(reaction, user, strings) {
 								//warnUser(warningChannel, user, ["Reaction On Multiple Quests", "Hi there, as a general rule of Blades, players can only leave their reaction on *__one__* quest at a time.  I have detected that you left more than one reaction, so your reaction to " + quest_name + " has been removed."]);
 								let duplicateLog = questFromBoard.error.get("duplicatedReaction").filter(error => error.includes(user.username));
 								for (let e = 0; e < duplicateLog.length; e++) {
-									duplicateLog[e] = "- " + duplicateLog[e].split(quest_name)[1].split(" and ")[1]; // todo - could this be simplified???
+									duplicateLog[e] = "- " + duplicateLog[e].split(quest_name + " and ")[1];
 								}
 								console.log("Duplicate error detected, warning user...");
 								warnUser(warningChannel, user, [alerts.duplicates.title + ": " + quest_name, alerts.duplicates.description + "\n\n__**Duplicated Quest Reactions:**__\n- " + quest_name + "\n" + duplicateLog.join("\n")]);
