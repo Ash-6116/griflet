@@ -345,28 +345,30 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 		logForFile += "Nobody\n";
 	}
 	// roster
-	if (rosterOutput[0].length > 0 || rosterOutput[1].length > 0) {
-		const rosterEmbed = new EmbedBuilder()
-			.setTitle('Rosters');
-		let rosterString = "";
-		logForFile += "Rosters:\n";
-		if (rosterOutput[0].length > 0) {
-			rosterString += "**";
-			rosterOutput[0].forEach(newSheet => {
-				rosterString += newSheet + ", ";
-			});
-			rosterString += "**\nis not currently being checked\n\n";
+	if (rosterOutput != null) {
+		if (rosterOutput[0].length > 0 || rosterOutput[1].length > 0) {
+			const rosterEmbed = new EmbedBuilder()
+				.setTitle('Rosters');
+			let rosterString = "";
+			logForFile += "Rosters:\n";
+			if (rosterOutput[0].length > 0) {
+				rosterString += "**";
+				rosterOutput[0].forEach(newSheet => {
+					rosterString += newSheet + ", ";
+				});
+				rosterString += "**\nis not currently being checked\n\n";
+			}
+			if (rosterOutput[1].length > 0) {
+				rosterString += "**";
+				rosterOutput[1].forEach(sheet => {
+					rosterString += sheet + ", ";
+				});
+				rosterString += "**\nis currently being checked";
+			}
+			logForFile += rosterString + "\n";
+			rosterEmbed.setDescription(rosterString);
+			outputEmbedArray.push(rosterEmbed);
 		}
-		if (rosterOutput[1].length > 0) {
-			rosterString += "**";
-			rosterOutput[1].forEach(sheet => {
-				rosterString += sheet + ", ";
-			});
-			rosterString += "**\nis currently being checked";
-		}
-		logForFile += rosterString + "\n";
-		rosterEmbed.setDescription(rosterString);
-		outputEmbedArray.push(rosterEmbed);
 	}
 	// Show running caravans
 	if (questBoard.filter(quest => quest.hasOwnProperty('caravan'))) {
