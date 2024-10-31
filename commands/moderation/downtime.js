@@ -751,7 +751,7 @@ module.exports = { checkArrowIsOnlyOnRunning,
 				.setDescription("A message to display alongside this week's downtime alert.")
 				.setRequired(false))
 		.addStringOption(option =>
-			option.setName('routinee')
+			option.setName('routine')
 				.setDescription("Run a specific part of the Downtime routine rather than all of it.")
 				.setRequired(false))
 		.addStringOption(option =>
