@@ -3,6 +3,7 @@ const { testUser } = require('../../shared_classes/user.js');
 const { mirror } = require('../../shared_classes/output.js');
 const roleTest = require('../../shared_classes/roleTest.js');
 const outputStyle = process.env.outputStyle;
+const fs = require('fs');
 
 /**
  * Neph's recommended steps:
@@ -43,7 +44,7 @@ function renderLogfile(processedCategories, period) {
 				if (filterOnMonths(lastChannel.lastMessage.createdTimestamp, period)) {
 					outputString += category.name + ":\n(Created: " + resolveDate(category.created) + ")\n";
 					outputString += "(Roles: " + lastChannel.roles.toString() + ")\n";
-					outputStirng += "Last message written by: " + lastChannel.lastMessage.author.username + "\non: " + resolveDate(lastChannel.lastMessage.createdTimestamp) + "\nin: " + lastChannel.name + "\n\n";
+					outputString += "Last message written by: " + lastChannel.lastMessage.author.username + "\non: " + resolveDate(lastChannel.lastMessage.createdTimestamp) + "\nin: " + lastChannel.name + "\n\n";
 				}
 			}
 		}
@@ -59,7 +60,7 @@ function renderLogfile(processedCategories, period) {
 }
 
 function renderOutput(processedCategories, guildChannels, interaction) {
-	const size = 20, period = interaction.options.getString('period');
+	const size = 13, period = interaction.options.getString('period');
 	let categoriesPerEmbed = [], embedCollection = [];
 	for (let i = 0; i < processedCategories.length; i+= size) {
 		categoriesPerEmbed.push(processedCategories.slice(i, i+size));
@@ -83,6 +84,7 @@ function renderOutput(processedCategories, guildChannels, interaction) {
 				}
 			}
 		});
+		console.log("Embed size: " + embed.length);
 		embedCollection.push(embed);
 	}
 	mirror(undefined, interaction, embedCollection);

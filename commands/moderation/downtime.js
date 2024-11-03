@@ -382,9 +382,11 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 			runningString += "DM:  <@" + quest.DM + ">\n"; // TODO - might need a different way to ping people
 			runningString += "Date started: " + quest.date + "\n";
 			runningString += "Players: ";
-			quest.reactions.get(bladesEmoji).users.forEach(user => {
-				runningString += "<@" + user.id + ">, "; // as above
-			});
+			if (quest.reactions.has(bladesEmoji)) {
+				quest.reactions.get(bladesEmoji).users.forEach(user => {
+					runningString += "<@" + user.id + ">, "; // as above
+				});
+			}
 			runningString = runningString.slice(0, -2) + "\n\n";
 		});
 		logForFile += runningString + "\n";
