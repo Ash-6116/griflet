@@ -40,8 +40,12 @@ async function errorChecking(reaction, user, strings) {
 		if (questMessageArray[0] === "---") {
 			questMessage.splice(0, 1);
 		}
-		const quest_name = questMessageArray[0].replace(/\*/g, "");
+		const quest_name = questMessageArray[0].replace(/\*/g, ""),
+			quest_party_size = questMessageArray.filter(string => string.includes("Party"))[0].split(":")[1].replace(/\s/g, '').replace(/\*/g, '');
 		switch (true) {
+			case (quest_party_size.includes("?")):
+				// Event quest, ignore size restraint
+				break;
 		// 1 - check if it is a valid reaction (crossed_swords or bow_and_arrows), if it isn't, Griflet should warn the user in viewing-area
 			case (!(reaction._emoji.name == crossed_swords || reaction._emoji.name == bow_and_arrows)) :
 				//warnUser(warningChannel, user, ["Incorrect Reaction", "Hi, just to let you know that on quest-board, the only valid reaction for most Blades members is the crossed_swords (" + crossed_swords + ") emoji.\n\nAs your reaction to " + quest_name + " was not crossed_swords, I have deleted the incorrect reaction.\n\nIf you would like to sign up to this quest, please repost a reaction to its post in quest-board using the crossed_swords emoji.  Thanks."]);
@@ -49,7 +53,7 @@ async function errorChecking(reaction, user, strings) {
 				deleteReaction(questMessage, reaction, user);
 				break;
 			// 5th reaction
-			case (reaction.count > 4):
+			case (reaction.count > Number(quest_party_size)):
 				//warnUser(warningChannel, user, ["Caravan already full", "Hi, just to let you know that " + quest_name + " is already filled and is either running or awaiting a DM.  Each caravan can have **four** players.  However, we rerun quests frequently, so you don't need to worry about missing out."]);
 				warnUser(warningChannel, user, [alerts.full.title + ": " + quest_name, alerts.full.description]);
 				deleteReaction(questMessage, reaction, user);
@@ -67,16 +71,28 @@ async function errorChecking(reaction, user, strings) {
 						console.log("Detected that quest" + quest_name + " has a detected error");
 						if (questFromBoard.error.has("duplicatedReaction")) {
 							if (questFromBoard.error.get("duplicatedReaction").join().includes(user.username)) {
-								// user left reactions elsewhere, remove this one!!!
-								//warnUser(warningChannel, user, ["Reaction On Multiple Quests", "Hi there, as a general rule of Blades, players can only leave their reaction on *__one__* quest at a time.  I have detected that you left more than one reaction, so your reaction to " + quest_name + " has been removed."]);
+								// user left reactions on other quests
 								let duplicateLog = questFromBoard.error.get("duplicatedReaction").filter(error => error.includes(user.username));
 								for (let e = 0; e < duplicateLog.length; e++) {
 									duplicateLog[e] = "- " + duplicateLog[e].split(quest_name + " and ")[1];
 								}
 								console.log("Duplicate error detected, warning user...");
-								warnUser(warningChannel, user, [alerts.duplicates.title + ": " + quest_name, alerts.duplicates.description + "\n\n__**Duplicated Quest Reactions:**__\n- " + quest_name + "\n" + duplicateLog.join("\n")]);
-								console.log("Attempting removal of duplicate reaction");
-								deleteReaction(questMessage, reaction, user);
+								let condonable = false; // used to prevent Event quests triggering
+								duplicateLog.forEach(duplicate => {
+									const title = duplicate.split("- ")[1];
+									const match = questBoard.filter(quest => quest.name === title)[0];
+									if (match != undefined) {
+										if (match.tier === "???") {
+											condonable = true;
+											console.log("Duplicate is an event quest, ignore");
+										}
+									}
+								});
+								if (!condonable) {
+									warnUser(warningChannel, user, [alerts.duplicates.title + ": " + quest_name, alerts.duplicates.description + "\n\n__**Duplicated Quest Reactions:**__\n- " + quest_name + "\n" + duplicateLog.join("\n")]);
+									console.log("Attempting removal of duplicate reaction");
+									deleteReaction(questMessage, reaction, user);
+								}
 							}
 						}
 						if (questFromBoard.error.has('arrowsOnNotRunning')) {
