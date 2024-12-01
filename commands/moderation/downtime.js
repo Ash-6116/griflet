@@ -71,8 +71,10 @@ async function gatherQuestBoard(interaction) {
 			let quest = { name: name,
 				description: itemSplit[4].replace(/\*/g, "").split("Description: ")[1],
 				reactions: reactionsReformatted,
-				rewards: itemSplit[3].replace(/\*/g, "").split("Rewards: ")[1],
-				tier: itemSplit[1].replace(/\*/g, "").split("Tier:")[1].trim()};
+				rewards: itemSplit[3].replace(/\*/g, "").split("Rewards: ")[1]};
+			if (itemSplit[1].replace(/\*/g, "").split("Tier:")[1] != undefined) {
+				quest.tier = itemSplit[1].replace(/\*/g, "").split("Tier:")[1].trim();
+			}
 			quests.push(quest);
 		}
 	}
