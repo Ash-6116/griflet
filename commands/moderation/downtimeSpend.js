@@ -214,6 +214,15 @@ async function constructNGViewOutput(bladesData, users) { // need to define play
 		if (artwork != undefined) {
 			Embed.setThumbnail(artwork);
 		}
+		let nextLevel = "";
+		if (bladeData[1] < 20) { // will not trigger for level 20 characters
+			let progression = await getAllSpreadsheetValues(process.env.spreadsheetId, "Progression");
+			progression.splice([0][0], 1);
+			nextLevel += progression[bladeData[1]][2] - bladeData[7];
+		} else {
+			nextLevel += "MAX LEVEL REACHED";
+		}
+		Embed.addFields({name: "Rep to Next Level", value: nextLevel, inline: true});
 		EmbedArray.push(Embed);
 	//});
 	};
@@ -380,9 +389,11 @@ async function rosterView(bladeData, interaction) {
 		interaction.followUp(output);
 	} else if (outputStyle == "Embed") {
 		let outputEmbed = await constructNGViewOutput(bladeData, users);
-		console.log(outputEmbed);
-		//interaction.followUp({ embeds: [outputEmbed] });
-		interaction.followUp({ embeds: outputEmbed });
+		if (outputEmbed.length > 0) {
+			interaction.followUp({ embeds: outputEmbed });
+		} else {
+			interaction.followUp("Apologies, there does not seem to be a Blade on the roster with the name: " + interaction.options.getString('blade'));
+		}
 	} else {
 		console.log("Improper output style selected, must be either Legacy or Embed!!!");
 	}
