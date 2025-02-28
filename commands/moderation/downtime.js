@@ -710,7 +710,7 @@ async function downtimeRoutine(interaction) {
 		emptyCaravans = dailyOutput[1],
 		routine = interaction.options.getString('routine'),
 		messageForBlades = interaction.options.getString('message'),
-		options = interaction.options.getString('options');
+		options = interaction.options.getString('options'); // need to convert any string here TO LOWER CASE and make into an ARRAY, so that multiple options can be passed at the same time, ie. daily, no vassals
 	let strings = { }, // empty Object to prevent errors being thrown
 		councilAuthorisation = false;
 	if (fs.existsSync('strings.txt')) {
@@ -724,13 +724,14 @@ async function downtimeRoutine(interaction) {
 		console.log("Council Authorisation: " + councilAuthorisation);
 	}
 	switch (true) {
-		case (options == null || options != "no announcement") && (councilAuthorisation || routine == "announce"):
+		// need to convert these to treat options as an ARRAY and check it does not contain specific keywords rather than assuming only one option is present
+		case (options == null || options != "no announcement" || options != "daily") && (councilAuthorisation || routine == "announce"):
 			announce(questBoard.filter(quest => quest.waiting === "Blades"), guildRoles, guildChannels, messageForBlades, strings);
 		case (options == null || options != "no vassals") && (councilAuthorisation || (routine == "announce" || routine == "daily")):
 			vassals(questBoard.filter(quest => quest.waiting === "Vassals"), guildRoles, guildChannels, strings);
-		case (options == null || options != "no prompt") && (councilAuthorisation || routine == "prompt"):
+		case (options == null || options != "no prompt" || options != "daily") && (councilAuthorisation || routine == "prompt"):
 			prompt(guildChannels);
-		case (options == null || options != "no ledger") && (councilAuthorisation || routine == "ledger"):
+		case (options == null || options != "no ledger" || options != "daily") && (councilAuthorisation || routine == "ledger"):
 			ledger.main(process.env.spreadsheetId, "Roster");
 		default: // do nothing
 			break;
