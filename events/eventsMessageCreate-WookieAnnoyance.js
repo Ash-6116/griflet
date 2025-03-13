@@ -21,8 +21,9 @@ module.exports = {
 				}
 			}
 			**/
-			if (message.author.username.toLowerCase().includes("ash") && message.channel.name.includes("viewing")) { // add in check to confirm it is in viewing-area only
+			if (message.author.username.toLowerCase().includes("ash")) { // add in check to confirm it is in viewing-area only
 				await message.reply("Hiya Lugh, just reminding you that your games need some love too!");
+				console.log(message);
 			}
 		}
 	},
