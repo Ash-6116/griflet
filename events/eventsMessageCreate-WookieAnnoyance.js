@@ -3,6 +3,7 @@ const { Events } = require('discord.js');
 module.exports = {
 	name: Events.MessageCreate,
 	async execute(message) {
+		console.log("running");
 		// 23.11 addition as a joke, wait for a message from viewing-area including the word 'morning'
 		if (message.guild.name.includes("Griflet Development Server") || message.guild.name.includes("A Castle in the Mist")) {
 			// Add code to check if the author is Wookie and it is December 2/12/23 joke
