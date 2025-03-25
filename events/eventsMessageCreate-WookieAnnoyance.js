@@ -21,10 +21,12 @@ module.exports = {
 				}
 			}
 			**/
+			/**
 			const guildChannels = await message.guild.channels.fetch();
 			if (message.author.username.toLowerCase().includes("lugh") && guildChannels.get(message.channelId).name.includes("viewing-area")) { // add in check to confirm it is in viewing-area only
 				await message.reply("Hiya Lugh, just reminding you that your games need some love too!");
 			}
+			**/
 		}
 	},
 };
