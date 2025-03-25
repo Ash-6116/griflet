@@ -1,6 +1,7 @@
 // Check for debug and if so, bring in the process.env options locally
 if (process.argv.indexOf("-d") > -1) {
 	require('dotenv').config();
+	console.log("Debug mode engaged");
 }
 
 if (process.argv.indexOf("-t") > -1) {

@@ -3,7 +3,6 @@ const { Events } = require('discord.js');
 module.exports = {
 	name: Events.MessageCreate,
 	async execute(message) {
-		console.log("running");
 		// 23.11 addition as a joke, wait for a message from viewing-area including the word 'morning'
 		if (message.guild.name.includes("Griflet Development Server") || message.guild.name.includes("A Castle in the Mist")) {
 			// Add code to check if the author is Wookie and it is December 2/12/23 joke
@@ -22,9 +21,9 @@ module.exports = {
 				}
 			}
 			**/
-			if (message.author.username.toLowerCase().includes("ash")) { // add in check to confirm it is in viewing-area only
+			const guildChannels = await message.guild.channels.fetch();
+			if (message.author.username.toLowerCase().includes("lugh") && guildChannels.get(message.channelId).name.includes("viewing-area")) { // add in check to confirm it is in viewing-area only
 				await message.reply("Hiya Lugh, just reminding you that your games need some love too!");
-				console.log(message);
 			}
 		}
 	},
