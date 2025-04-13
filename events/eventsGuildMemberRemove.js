@@ -1,6 +1,7 @@
-const { Events, EmbedBuilder } = require('discord.js');
-const { getAllSpreadsheetValues } = require('../commands/moderation/downtimeSpend.js');
-const { misted, processOutput } = require('../commands/moderation/misted.js');
+const { Events, EmbedBuilder } = require('discord.js'),
+	{ getAllSpreadsheetValues } = require('../commands/moderation/downtimeSpend.js'),
+	{ misted, processOutput } = require('../commands/moderation/misted.js'),
+	fs = require('fs');
 
 module.exports = {
 	name: Events.GuildMemberRemove,
