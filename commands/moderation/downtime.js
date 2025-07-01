@@ -619,7 +619,7 @@ function announce(questBoard, guildRoles, guildChannels, messageForBlades, strin
 	// eg. $server_anniversary should replace the messageForBlades with prewritten text from strings
 	const bladesEmoji = '⚔️',
 		announcementStrings = strings.announcement;;
-	let stdAnnouncement = announcementStrings.downtime_applied + "\nPlease ask <@&" + guildRoles.find(role => role.name === 'Knights').id + "> or <@&" + guildRoles.find(role => role.name === 'Squires').id + "> for spending downtime, a document of suggested activityes can be found in <#" + guildChannels.find(channel => channel.name === "gameplay-reference").id + ">.\n\n__**Quests Waiting For Guildmates:**__\n";
+	let stdAnnouncement = announcementStrings.downtime_applied + "\nPlease ask <@&" + guildRoles.find(role => role.name === 'Knights').id + "> or <@&" + guildRoles.find(role => role.name === 'Squires').id + "> for spending downtime, a document of suggested activities can be found in <#" + guildChannels.find(channel => channel.name === "gameplay-reference").id + "> and quests can be found in <#" + guildChannels.find(channel => channel.name === "quest-board") + "\n\n__**Quests Waiting For Guildmates:**__\n";
 	if (questBoard.length > 0) {
 	} else {
 		stdAnnouncement += "None\n";
