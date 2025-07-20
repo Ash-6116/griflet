@@ -10,7 +10,6 @@ module.exports = {
 					guildChannels.find(channel => channel.name === "bot-spam").send("Possible macbook spam detected <@" + guildRoles.find(role => role.name === 'Knights').id + "> Guild:" + message.guild.id + " Channel:" + message.channel.id  + "Message: " + message.id);
 					return;
 				}
-			}
 		}
 	},
 };
