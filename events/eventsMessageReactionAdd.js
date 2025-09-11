@@ -1,5 +1,5 @@
 const { Events, EmbedBuilder } = require('discord.js'),
-	crossed_swords = '⚔️', bow_and_arrows = '🏹',
+	crossed_swords = '⚔️', bow_and_arrows = '🏹', white_check_mark = '✅',
 	fs = require('fs'),
 	downtime = require("../commands/moderation/downtime.js");
 /**
@@ -13,6 +13,7 @@ async function deleteReaction(message, reaction, user) { // could reuse this as 
 		try {
 			await messageResolved.users.remove(user.id);
 			console.log("Reaction removed successfully");
+			console.log(reaction);
 		} catch (error) {
 			console.errpr("Something prevented reaction from being removed successfully");
 			console.error(error);
@@ -38,7 +39,7 @@ async function errorChecking(reaction, user, strings) {
 		let questMessage = await guildChannels.get(reaction.message.channelId).messages.fetch(reaction.message.id);
 		let questMessageArray = questMessage.content.split("\n");
 		if (questMessageArray[0] === "---") {
-			questMessage.splice(0, 1);
+			questMessageArray.splice(0, 1);
 		}
 		const quest_name = questMessageArray[0].replace(/\*/g, ""),
 			quest_party_size = questMessageArray.filter(string => string.includes("Party"))[0].split(":")[1].replace(/\s/g, '').replace(/\*/g, '');
@@ -46,7 +47,10 @@ async function errorChecking(reaction, user, strings) {
 			case (quest_party_size.includes("?")):
 				// Event quest, ignore size restraint
 				break;
-		// 1 - check if it is a valid reaction (crossed_swords or bow_and_arrows), if it isn't, Griflet should warn the user in viewing-area
+			case (reaction.emoji.name === white_check_mark && user.username === "Griflet"):
+				console.log("Valid reaction from GRIFLET only, ignore");
+				break;
+		// 1 - check if it is a valid reaction (crossed_swords or bow_and_arrows or (for Griflet only) a white_check_mark), if it isn't, Griflet should warn the user in viewing-area
 			case (!(reaction._emoji.name == crossed_swords || reaction._emoji.name == bow_and_arrows)) :
 				//warnUser(warningChannel, user, ["Incorrect Reaction", "Hi, just to let you know that on quest-board, the only valid reaction for most Blades members is the crossed_swords (" + crossed_swords + ") emoji.\n\nAs your reaction to " + quest_name + " was not crossed_swords, I have deleted the incorrect reaction.\n\nIf you would like to sign up to this quest, please repost a reaction to its post in quest-board using the crossed_swords emoji.  Thanks."]);
 				warnUser(warningChannel, user, [alerts.invalid.title + ": " + quest_name, alerts.invalid.description]);

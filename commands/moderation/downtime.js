@@ -192,7 +192,7 @@ function checkUserWithReactionsExists(questBoard, guildMembers) {
 }
 
 function checkValidReactions(questBoard) {
-	const bladesEmoji = '⚔️', arrowsEmoji = "🏹";
+	const bladesEmoji = '⚔️', arrowsEmoji = "🏹", runningEmoji = '';
 	questBoard.forEach(quest => {
 		if (quest.hasOwnProperty('reactions')) {
 			let invalidReactions = new Map();
@@ -202,6 +202,7 @@ function checkValidReactions(questBoard) {
 						break;
 					case (arrowsEmoji):
 						break;
+					// Need to add a case for :white_check_mark: issued by Griflet only
 					default:
 						// remove the reaction
 						quest.reactions.delete(reaction.name);
@@ -307,7 +308,38 @@ async function dailyRoutine(interaction, guildChannels, guildRoles) {
 	checkArrowIsOnlyOnRunning(questBoard);
 	checkNumberOfReactions(questBoard); // !! THIS CHECK MUST ALWAYS RUN LAST !!
 	interaction.editReply("Error checks complete, proceeding to process output...");
+	await markRunningCaravans(questBoard, guildChannels.filter(channel => channel.name === "quest-board")); // 25.09 - Seeking to add a reaction onto the quest-board entries of running caravans
 	return [questBoard, emptyCaravans]; // return questBoard and use this function as a daily command so it can be exported to a reactions autorun?
+}
+
+async function markRunningCaravans(questBoard, questBoardDiscord) {
+	//25.09 - Mark running caravans with a :white_check_mark: if they are not marked up already
+	// 1st Gather the quest-board messages (again)
+	questMessages = await questBoardDiscord;
+	questMessages = await questMessages.get(Array.from(questMessages.keys())[0]).messages.fetch();
+	questIDs = Array.from(questMessages.keys());
+	// 2nd Filter the questBoard so ONLY the running quests are available
+	runningQuests = questBoard.filter(quest => quest.hasOwnProperty("caravan"));
+	// now, for each message on quest-board, check if it is in the RUNNING state by comparing runningQuests to questMessages	
+	//runningQuests.forEach(quest => {
+	for (let q = 0; q < runningQuests.length; q++) {
+		const quest = runningQuests[q];
+		console.log(quest.name);
+		for (let m = 0; m < questIDs.length; m++) { 
+			if (questMessages.get(questIDs[m]).content.includes(quest.name)) {
+				// 3rd - now we need to do one final check.  If the quest.reactions have a :white_check_mark:, then we do nothing, else add a :white_check_mark:
+				const message = questMessages.get(questIDs[m]);
+				reactions = message.reactions.cache;
+				if (reactions.has('✅')) {
+					console.log("Griflet already reacted to this quest, we need do nothing more");
+				} else {
+					await message.react('✅');
+				}
+			}
+		}
+	}
+	return;
+
 }
 
 function sortByCaravan(a, b) {
@@ -619,7 +651,7 @@ function announce(questBoard, guildRoles, guildChannels, messageForBlades, strin
 	// eg. $server_anniversary should replace the messageForBlades with prewritten text from strings
 	const bladesEmoji = '⚔️',
 		announcementStrings = strings.announcement;;
-	let stdAnnouncement = announcementStrings.downtime_applied + "\nPlease ask <@&" + guildRoles.find(role => role.name === 'Knights').id + "> or <@&" + guildRoles.find(role => role.name === 'Squires').id + "> for spending downtime, a document of suggested activities can be found in <#" + guildChannels.find(channel => channel.name === "gameplay-reference").id + "> and quests can be found in <#" + guildChannels.find(channel => channel.name === "quest-board") + ">\n\n__**Quests Waiting For Guildmates:**__\n";
+	let stdAnnouncement = announcementStrings.downtime_applied + "\nPlease ask <@&" + guildRoles.find(role => role.name === 'Knights').id + "> or <@&" + guildRoles.find(role => role.name === 'Squires').id + "> for spending downtime, a document of suggested activities can be found in <#" + guildChannels.find(channel => channel.name === "gameplay-reference").id + "> and quests can be found in <#" + guildChannels.find(channel => channel.name === "quest-board") + ">\nPlease note, a white check mark indicates a caravan that is already running.\n\n__**Quests Waiting For Guildmates:**__\n";
 	if (questBoard.length > 0) {
 	} else {
 		stdAnnouncement += "None\n";
@@ -727,12 +759,16 @@ async function downtimeRoutine(interaction) {
 		// need to convert these to treat options as an ARRAY and check it does not contain specific keywords rather than assuming only one option is present
 		case (options == null || options != "no announcement" || options != "daily") && (councilAuthorisation || routine == "announce"):
 			announce(questBoard.filter(quest => quest.waiting === "Blades"), guildRoles, guildChannels, messageForBlades, strings);
+			break;
 		case (options == null || options != "no vassals") && (councilAuthorisation || (routine == "announce" || routine == "daily")):
 			vassals(questBoard.filter(quest => quest.waiting === "Vassals"), guildRoles, guildChannels, strings);
+			break;
 		case (options == null || options != "no prompt" || options != "daily") && (councilAuthorisation || routine == "prompt"):
 			prompt(guildChannels);
+			break;
 		case (options == null || options != "no ledger" || options != "daily") && (councilAuthorisation || routine == "ledger"):
 			ledger.main(process.env.spreadsheetId, "Roster");
+			break;
 		default: // do nothing
 			break;
 	}
