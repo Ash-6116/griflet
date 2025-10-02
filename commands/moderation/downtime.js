@@ -89,36 +89,34 @@ async function gatherRunningCaravans(caravans, questBoard) {
 	const categoryId = Array.from (caravans.keys() );
 	for (let index = 0; index < caravans.size; index++) {
 		let qcs = caravans.get(categoryId[index]).guild.channels.cache.filter(channel => channel.parentId === caravans.get(categoryId[index]).id && !channel.name.includes("-ooc"));
-		qcs.delete('474382720739573779');
-		// NEED TO REMOVE BRIEFING-ROOM
+		qcs.delete('474382720739573779'); // need to remove briefing-room from consideration
 		const qc_id = Array.from(qcs.keys());
 		for(let c = 0; c < qcs.size; c++) {
-			const pinnedPost = await qcs.get(qc_id[c]).messages.fetchPinned();
-			// check if pinnedPost is populated, for channels that have no pins, it will equal 0 in size
-			if (pinnedPost.size < 1 && !qcs.get(qc_id[c]).name.includes("-ooc")) { // filters out ooc channels
+			const pinnedPost = await qcs.get(qc_id[c]).messages.fetchPins();
+			if (pinnedPost.items.length < 1 && !qcs.get(qc_id[c]).name.includes("-ooc")) { // filters out ooc channels
 				emptyCaravans.push(qcs.get(qc_id[c]).name);
 			} else {
-				pinnedPost.forEach(pin => {
-					const pinSplit = pin.content.split("\n"),
-						DM = pinSplit[5].substring(pinSplit[5].indexOf("@")+1, pinSplit[5].indexOf(">"));
-						title = pinSplit[0].replace(/\*/g, ""),
-						date = resolveDate(pin.createdTimestamp);
-					console.log("Title: " + title + "  DM: " + DM);
-					// now need to find the entry for the quest in questBoard and add to it
-					console.log(pin.content);
-					let caravanFromQuestBoard = questBoard.filter(quest => quest.name == title)[0], // error
-						pinnedPlayerIDs = pin.content.split("Players: ")[1].split(", ");
-					// Clean up pinnedPlayerIDs to remove <@ and > from each id, leaving behind only the id number
-					for (let p = 0; p < pinnedPlayerIDs.length; p++) {
-						pinnedPlayerIDs[p] = pinnedPlayerIDs[p].substring(
-							pinnedPlayerIDs[p].indexOf("<@")+2,
-							pinnedPlayerIDs[p].indexOf(">"));
-					}
-					caravanFromQuestBoard.DM = DM;
-					caravanFromQuestBoard.caravan = qcs.get(qc_id[c]).name.split("quest-caravan-")[1];
-					caravanFromQuestBoard.pinnedPlayerIDs = pinnedPlayerIDs; // need to try to clean this array up
-					caravanFromQuestBoard.date = date;
-				});
+				pinnedPost.items.forEach(item => {
+					const content = item.message.content.split("\n"),
+				              DM = content[5].substring(content[5].indexOf("@")+1, content[5].indexOf(">"));
+                                              title = content[0].replace(/\*/g, ""),
+                                              date = resolveDate(item.message.createdTimestamp);
+                                      console.log("Title: " + title + "  DM: " + DM);
+                                      // now need to find the entry for the quest in questBoard and add to it
+                                      console.log(item.message.content);
+                                      let caravanFromQuestBoard = questBoard.filter(quest => quest.name == title)[0], // error
+                                              pinnedPlayerIDs = item.message.content.split("Players: ")[1].split(", "); // TODO - does not seem to be outputting names now
+                                      // Clean up pinnedPlayerIDs to remove <@ and > from each id, leaving behind only the id number
+                                      for (let p = 0; p < pinnedPlayerIDs.length; p++) {
+                                              pinnedPlayerIDs[p] = pinnedPlayerIDs[p].substring(
+                                                      pinnedPlayerIDs[p].indexOf("<@")+2,
+                                                      pinnedPlayerIDs[p].indexOf(">"));
+                                      }
+                                      caravanFromQuestBoard.DM = DM;
+                                      caravanFromQuestBoard.caravan = qcs.get(qc_id[c]).name.split("quest-caravan-")[1];
+                                      caravanFromQuestBoard.pinnedPlayerIDs = pinnedPlayerIDs; // need to try to clean this array up
+                                      caravanFromQuestBoard.date = date;
+				});				
 			}
 		}
 	}
@@ -191,8 +189,8 @@ function checkUserWithReactionsExists(questBoard, guildMembers) {
 	return;
 }
 
-function checkValidReactions(questBoard) {
-	const bladesEmoji = '⚔️', arrowsEmoji = "🏹", runningEmoji = '';
+function checkValidReactions(questBoard) { // TODO - need to add code to account for Griflet's checkmarks here
+	const bladesEmoji = '⚔️', arrowsEmoji = "🏹", white_check_mark = '✅';
 	questBoard.forEach(quest => {
 		if (quest.hasOwnProperty('reactions')) {
 			let invalidReactions = new Map();
@@ -201,6 +199,8 @@ function checkValidReactions(questBoard) {
 					case (bladesEmoji):
 						break;
 					case (arrowsEmoji):
+						break;
+					case (white_check_mark): // TODO - check it is ONLY Griflet's reaction
 						break;
 					// Need to add a case for :white_check_mark: issued by Griflet only
 					default:
@@ -246,10 +246,11 @@ function checkNumberOfReactions(questBoard) {
 			const bladesEmoji = '⚔️';
 			if (!quest.hasOwnProperty('caravan')) {
 				const crossed_swords = quest.reactions.get(bladesEmoji);
-				if (crossed_swords.count > 0 && crossed_swords.count < 4) {
-					quest.waiting = 'Blades';
-				} else if (crossed_swords.count > 0 && crossed_swords.count == 4) {
+				console.log("Crossed Swords Reactions: " + crossed_swords.count);
+				if (crossed_swords.count > 0 && crossed_swords.count == 4) { // 4 = normal, 1 = debug
 					quest.waiting = 'Vassals';
+				} else if (crossed_swords.count > 0 && crossed_swords.count < 4) {
+					quest.waiting = 'Blades';
 				}
 			}
 		}
@@ -270,7 +271,9 @@ function checkUniqueReactions(questBoard) {
 				if (comparison.reactions.get(bladesEmoji) != undefined) {
 					quest.reactions.get(bladesEmoji).users.forEach(user => {
 						if (comparison.reactions.get(bladesEmoji).users.has(user.id)) {
-							duplicatedArray.push(user.username + " reacted to " + quest.name + " and " + comparison.name);
+							if (!comparison.tier === "???") {
+								duplicatedArray.push(user.username + " reacted to " + quest.name + " and " + comparison.name);
+							}
 						}
 					});
 				}
@@ -330,9 +333,7 @@ async function markRunningCaravans(questBoard, questBoardDiscord) {
 				// 3rd - now we need to do one final check.  If the quest.reactions have a :white_check_mark:, then we do nothing, else add a :white_check_mark:
 				const message = questMessages.get(questIDs[m]);
 				reactions = message.reactions.cache;
-				if (reactions.has('✅')) {
-					console.log("Griflet already reacted to this quest, we need do nothing more");
-				} else {
+				if (!reactions.has('✅')) {
 					await message.react('✅');
 				}
 			}
@@ -415,12 +416,11 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 			runningString += "**quest-caravan-" + quest.caravan + ":\n	Tier: " + quest.tier + " - " + quest.name + "**\n";
 			runningString += "DM:  <@" + quest.DM + ">\n"; // TODO - might need a different way to ping people
 			runningString += "Date started: " + quest.date + "\n";
-			runningString += "Players: ";
-			if (quest.reactions.has(bladesEmoji)) {
-				quest.reactions.get(bladesEmoji).users.forEach(user => {
-					runningString += "<@" + user.id + ">, "; // as above
-				});
-			}
+			runningString += "Players: "; // AH HAH, we're not pulling the data properly!! TODO = fix by calling pinnedPlayerIDs
+			console.log(quest);
+			quest.pinnedPlayerIDs.forEach(player => {
+				runningString += "<@" + player + ">, ";
+			});
 			runningString = runningString.slice(0, -2) + "\n\n";
 		});
 		logForFile += runningString + "\n";
@@ -740,37 +740,38 @@ async function downtimeRoutine(interaction) {
 		dailyOutput = await dailyRoutine(interaction, guildChannels, guildRoles),
 		questBoard = dailyOutput[0],
 		emptyCaravans = dailyOutput[1],
-		routine = interaction.options.getString('routine'),
-		messageForBlades = interaction.options.getString('message'),
-		options = interaction.options.getString('options'); // need to convert any string here TO LOWER CASE and make into an ARRAY, so that multiple options can be passed at the same time, ie. daily, no vassals
-	let strings = { }, // empty Object to prevent errors being thrown
-		councilAuthorisation = false;
+		messageForBlades = interaction.options.getString('message');
+	let routine = interaction.options.getString('routine'), options = interaction.options.getString('options');
+	if (options != null) {
+		options = options.toLowerCase().split(", ");
+	} else {
+		options = []; // this way options will always be an ARRAY that can be used with the switch statement below
+	}
+	if (routine != null) {
+		routine = routine.toLowerCase().split(", ");
+	} else {
+		routine = []; // this way routine will always be an ARRAY that can be used with the switch statement below
+	}
+	let strings = { }; // empty Object to prevent errors being thrown
 	if (fs.existsSync('strings.txt')) {
 		strings = JSON.parse(fs.readFileSync('strings.txt', 'utf8'));
 	} else {
 		console.error('JSON Strings file is missing!');
 		strings = "";
 	}
-	if (routine == null) {
-		councilAuthorisation = await councilAlert(questBoard, guildChannels, interaction, emptyCaravans, rosterOutput);
-		console.log("Council Authorisation: " + councilAuthorisation);
+	let councilAuthorisation = await councilAlert(questBoard, guildChannels, interaction, emptyCaravans, rosterOutput);
+	if (!options.includes("no announcement") && !options.includes("daily") && councilAuthorisation && (routine.length < 1 || routine.includes("announce"))) {
+		announce(questBoard.filter(quest => quest.waiting === "Blades"), guildRoles, guildChannels, messageForBlades, strings);
 	}
-	switch (true) {
-		// need to convert these to treat options as an ARRAY and check it does not contain specific keywords rather than assuming only one option is present
-		case (options == null || options != "no announcement" || options != "daily") && (councilAuthorisation || routine == "announce"):
-			announce(questBoard.filter(quest => quest.waiting === "Blades"), guildRoles, guildChannels, messageForBlades, strings);
-			break;
-		case (options == null || options != "no vassals") && (councilAuthorisation || (routine == "announce" || routine == "daily")):
-			vassals(questBoard.filter(quest => quest.waiting === "Vassals"), guildRoles, guildChannels, strings);
-			break;
-		case (options == null || options != "no prompt" || options != "daily") && (councilAuthorisation || routine == "prompt"):
-			prompt(guildChannels);
-			break;
-		case (options == null || options != "no ledger" || options != "daily") && (councilAuthorisation || routine == "ledger"):
-			ledger.main(process.env.spreadsheetId, "Roster");
-			break;
-		default: // do nothing
-			break;
+	if (!options.includes("no vassals") && councilAuthorisation && (routine.length < 1 || routine.includes("announce") || routine.includes("daily"))) {
+		console.log(questBoard);
+		vassals(questBoard.filter(quest => quest.waiting === "Vassals"), guildRoles, guildChannels, strings);
+	}
+	if (!options.includes("no prompt") && !options.includes("daily") && councilAuthorisation && (routine.length < 1 || routine.includes("prompt"))) {
+		prompt(guildChannels);
+	}
+	if (!options.includes("no ledger") && councilAuthorisation && (routine.length < 1 || routine.includes("ledger"))) {
+		ledger.main(process.env.spreadsheetId, "Roster");
 	}
 	if (isFirstSunday()) { // triggers on first Sunday of the month
 		interaction.options._hoistedOptions = [{ name: 'period', type: 3, value: '3' }]; // setting period to 3 months for categories
@@ -781,6 +782,7 @@ async function downtimeRoutine(interaction) {
 
 module.exports = { checkArrowIsOnlyOnRunning,
 	checkUniqueReactions,
+	checkNumberOfReactions,
 	gatherQuestBoard,
 	gatherRunningCaravans,
 	vassals,

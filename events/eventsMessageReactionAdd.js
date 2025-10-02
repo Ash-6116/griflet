@@ -6,18 +6,14 @@ const { Events, EmbedBuilder } = require('discord.js'),
  * Wish to use this module to run automated checks on reactions going to quest-board
 **/
 
+// NOTE:  This WILL crash if the user removes their reaction while this module is running, so this needs to have proper error checking and restrict the amount of awaits to the absolute bare minimum.
+
 async function deleteReaction(message, reaction, user) { // could reuse this as part of the eventsGuildMemberRemove event
-	const messageReactions = await message.reactions;
-	if (messageReactions != undefined) {
-		const messageResolved = await messageReactions.resolve(reaction);
-		try {
-			await messageResolved.users.remove(user.id);
-			console.log("Reaction removed successfully");
-			console.log(reaction);
-		} catch (error) {
-			console.errpr("Something prevented reaction from being removed successfully");
-			console.error(error);
-		}
+	try {
+		message.reactions.resolve(reaction).users.remove(user.id);
+	} catch (error) {
+		console.error("OOPS");
+		console.error(error);
 	}
 	return;
 }
@@ -52,25 +48,25 @@ async function errorChecking(reaction, user, strings) {
 				break;
 		// 1 - check if it is a valid reaction (crossed_swords or bow_and_arrows or (for Griflet only) a white_check_mark), if it isn't, Griflet should warn the user in viewing-area
 			case (!(reaction._emoji.name == crossed_swords || reaction._emoji.name == bow_and_arrows)) :
-				//warnUser(warningChannel, user, ["Incorrect Reaction", "Hi, just to let you know that on quest-board, the only valid reaction for most Blades members is the crossed_swords (" + crossed_swords + ") emoji.\n\nAs your reaction to " + quest_name + " was not crossed_swords, I have deleted the incorrect reaction.\n\nIf you would like to sign up to this quest, please repost a reaction to its post in quest-board using the crossed_swords emoji.  Thanks."]);
 				warnUser(warningChannel, user, [alerts.invalid.title + ": " + quest_name, alerts.invalid.description]);
 				deleteReaction(questMessage, reaction, user);
 				break;
 			// 5th reaction
 			case (reaction.count > Number(quest_party_size)):
-				//warnUser(warningChannel, user, ["Caravan already full", "Hi, just to let you know that " + quest_name + " is already filled and is either running or awaiting a DM.  Each caravan can have **four** players.  However, we rerun quests frequently, so you don't need to worry about missing out."]);
 				warnUser(warningChannel, user, [alerts.full.title + ": " + quest_name, alerts.full.description]);
 				deleteReaction(questMessage, reaction, user);
 			default:
 				// get the questBoard and runningCaravans
 				console.log("Getting questBoard, this might take a while...");
+				// TODO - CALL ALL COMPONENTS OF DAILY ROUTINE DUMMY!!!!
 				let questBoard = await downtime.gatherQuestBoard(reaction.message);
 				await downtime.gatherRunningCaravans(guildChannels.filter(channel => channel.name === "Quest Caravans"), questBoard);
 				downtime.checkUniqueReactions(questBoard);
 				downtime.checkArrowIsOnlyOnRunning(questBoard);
+				downtime.checkNumberOfReactions(questBoard);
 				const questFromBoard = questBoard.find(quest => quest.name === quest_name);
 				console.log("Finished gathering, starting checks...");
-				switch (true) {
+				switch (true) { // rewrite as nested IF statements???
 					case (questFromBoard.hasOwnProperty("error")) :
 						console.log("Detected that quest" + quest_name + " has a detected error");
 						if (questFromBoard.error.has("duplicatedReaction")) {
@@ -96,6 +92,7 @@ async function errorChecking(reaction, user, strings) {
 									warnUser(warningChannel, user, [alerts.duplicates.title + ": " + quest_name, alerts.duplicates.description + "\n\n__**Duplicated Quest Reactions:**__\n- " + quest_name + "\n" + duplicateLog.join("\n")]);
 									console.log("Attempting removal of duplicate reaction");
 									deleteReaction(questMessage, reaction, user);
+									break;
 								}
 							}
 						}
@@ -105,15 +102,17 @@ async function errorChecking(reaction, user, strings) {
 							if (questFromBoard.error.get('arrowsOnNotRunning').has(user.id)) {
 								warnUser(warningChannel, user, [alerts.arrow.title + ": " + quest_name, alerts.arrow.description]);
 								deleteReaction(questMessage, reaction, user);
+								break;
 							}
 						}
-						break;
+					/**
 					case (questFromBoard.hasOwnProperty("caravan")) :
 						warnUser(warningChannel, user, [alerts.already_running.title + ": " + quest_name, alerts.already_running.description ]);
 						deleteReaction(questMessage, reaction, user);
 						break;
+					**/
 					// 3 - check if the caravan has just filled and needs to have a vassals ping
-					case (questFromBoard.hasOwnProperty("waiting")) :
+					case (questFromBoard.hasOwnProperty("waiting")) : // TODO - is this the error? - PUT THIS HIGHER UP
 						if (questFromBoard.waiting === "Vassals") {
 							downtime.vassals(questBoard.filter(quest => quest.waiting === "Vassals"), guildRoles, guildChannels, strings);
 							break;
@@ -121,6 +120,7 @@ async function errorChecking(reaction, user, strings) {
 					default:
 						break;
 				}
+				console.log(questFromBoard);
 				break;
 		}
 	}

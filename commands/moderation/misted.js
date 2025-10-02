@@ -27,6 +27,8 @@ async function misted(misted_user, roster) {
 	const searchActive = await find_member(await getAllSpreadsheetValues(process.env.spreadsheetId, "Roster"), misted_user);
 	// Third, check the Guild Roster | Inactive tab
 	const searchInactive = await find_member(await getAllSpreadsheetValues(process.env.spreadsheetId, "Inactive"), misted_user);
+	// Fourth, check the quest-board for any reactions from the user
+	// TODO
 	return [result_from_roster, searchActive, searchInactive];
 }
 

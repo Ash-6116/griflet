@@ -26,7 +26,7 @@
 		},
 		"invalid": {
 			"title": "Incorrect Reaction To Quest",
-			"description": "Hi, just to let you know that on quest-board, the only valid reaction for most Blades members is the crossed_swords emoji.  As your reaction was not crossed_swords, I have deleted it.\n\nIf you would like to sign up to this quest, please repost a crossed_swords reaction to its post in quest-board.  Thanks"
+			"description": "Hi, just to let you know that on quest-board, the only valid reaction for most Blades members is the crossed_swords ('⚔️') emoji.  As your reaction was not crossed_swords, I have deleted it.\n\nIf you would like to sign up to this quest, please repost a crossed_swords reaction to its post in quest-board.  Thanks"
 		}
 	},
 	"vassals_alert": {

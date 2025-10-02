@@ -4,18 +4,18 @@
   "description": "An administration tool for the Discord server A Castle In The Mist",
   "main": "index.js",
   "dependencies": {
-    "@google-cloud/local-auth": "^2.1.0",
+    "@google-cloud/local-auth": "^2.1.1",
     "cjopus": "^0.0.4",
-    "date-and-time": "^3.0.0",
-    "discord.js": "^14.15.0-dev.1705363782-33674be85",
-    "dotenv": "^16.0.3",
+    "date-and-time": "^3.6.0",
+    "discord.js": "^14.22.1",
+    "dotenv": "^16.6.1",
     "googleapis": "^105.0.0",
     "is-stream": "^2.0.1",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^2.7.0",
     "options": "^0.0.6",
-    "socket.io": "^4.5.0",
+    "socket.io": "^4.8.1",
     "tweetnacl": "^0.14.5",
-    "ultron": "^1.0.2"
+    "ultron": "^1.1.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
