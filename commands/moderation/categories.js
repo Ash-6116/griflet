@@ -14,8 +14,7 @@ const fs = require('fs');
  * 5) Repeat steps 3/4 until you get through all categories.
 **/
 
-function resolveDate(Timestamp) {
-  // Still works in API v14 and requires no overhaul
+function resolveDate(Timestamp) { // Still works in API v14 and requires no overhaul
   let d = new Date(Timestamp);
   return d.toDateString() + " " + d.getHours() + ":" + (d.getMinutes()<10?'0':'') + d.getMinutes();
 }
@@ -28,11 +27,7 @@ function filterOnMonths(timestamp, period) {
   } else {
     return true; // no period means we want ALL data
   }
-  if (timestampDate < today) { // could this be replaced with return (timestampDate < today); ??
-    return true;
-  } else {
-    return false;
-  }
+  return (timestampDate < today);
 }
 
 function renderLogfile(processedCategories, period) {
@@ -60,27 +55,25 @@ function renderLogfile(processedCategories, period) {
 }
 
 function renderOutput(processedCategories, guildChannels, interaction) {
-	const size = 13, period = interaction.options.getString('period');
+	const size = 13;
 	let categoriesPerEmbed = [], embedCollection = [];
 	for (let i = 0; i < processedCategories.length; i+= size) {
 		categoriesPerEmbed.push(processedCategories.slice(i, i+size));
 	}
 	for (let i=0; i < categoriesPerEmbed.length; i++) {
 		const embed = new EmbedBuilder()
-			.setTitle("Categories Output (" + (1+i) + "/" + categoriesPerEmbed.length + ")");
+			.setTitle("Categories Output (" + (1+i) + "/" + categoriesPerEmbed.length + ")"); // TODO - here's the problem - this is being declared BEFORE the filtering takes place!!!
 		categoriesPerEmbed[i].forEach(category => {
 			let categoryString = " ", categoryTitle = category.name;
 			const lastChannel = category.channels.slice(-1)[0];
 			if (lastChannel != null) {
 				if (lastChannel.lastMessage != null) {
-					if (filterOnMonths(lastChannel.lastMessage.createdTimestamp, period)) {
-						categoryString += "(Roles: " + lastChannel.roles.toString() + ")\n";
-						categoryString += "Last message written by: " + lastChannel.lastMessage.author.username + "\non: " + resolveDate(lastChannel.lastMessage.createdTimestamp) + "\nin: " + lastChannel.name;
-						if (category.created != null) {
-							categoryTitle += "\n(Created: " + resolveDate(category.created) + ")";
-						}
-						embed.addFields({name: categoryTitle, value: categoryString, inline: false});
+					categoryString += "(Roles: " + lastChannel.roles.toString() + ")\n";
+					categoryString += "Last message written by: " + lastChannel.lastMessage.author.username + "\non: " + resolveDate(lastChannel.lastMessage.createdTimestamp) + "\nin: " + lastChannel.name;
+					if (category.created != null) {
+						categoryTitle += "\n(Created: " + resolveDate(category.created) + ")";
 					}
+					embed.addFields({name: categoryTitle, value: categoryString, inline: false});
 				}
 			}
 		});
@@ -104,6 +97,7 @@ function sortByDate(a, b) {
 async function getLastMessage(guildChannels, guildRoles) {
 	const guildTextChannels = guildChannels.filter(channel => channel.type === 0),
 		channelKeys = Array.from(guildTextChannels.keys()),
+		ignoreRoles = ["Vampire Spawn", "Baroness", "Knights", "Griflet", "Dyno"];
 		guildCategories = guildChannels.filter(channel => channel.type === 4);
 	let categories = [];
 	guildCategories.forEach(category => { // convert the guildCategories into a more useable object
@@ -121,9 +115,10 @@ async function getLastMessage(guildChannels, guildRoles) {
 			output.lastMessage = null;
 		}
 		guildRoles.forEach(role => {
-			// todo - have an ignore array of role names to ignore?
 			if (channel.permissionsFor(role.id).has(PermissionsBitField.Flags.ViewChannel)) {
-				roleArray.push(role.name); // only adds if the role can view the channel
+				if (!ignoreRoles.includes(role.name)) { // checks that the role isn't in the ignoredRoles array above
+					roleArray.push(role.name); // only adds if the role can view the channel
+				}
 			}
 		});
 		output.roles = roleArray;
@@ -136,7 +131,6 @@ function sortChannelsForCategory(processedCategories) {
 	processedCategories.forEach(category => {
 		console.log(category.name);
 		console.log("---	---");
-		//category.channels = category.channels.sort(sortByDate); // error might've been here
 		category.channels.sort(sortByDate);
 		category.channels.forEach(channel => {
 			if (channel.lastMessage != null) {
@@ -148,6 +142,24 @@ function sortChannelsForCategory(processedCategories) {
 	return processedCategories;
 }
 
+function filterCategories(processedCategories, period) {
+	// remove any category that is younger than the period, ie. if the period is 4, then 3 and younger should be removed from the processedCategories list
+	let filteredCategories = []
+	processedCategories.forEach(category => {
+		if (category.channels != null) { // channels are already sorted, we just need the last item
+			lastChannel = category.channels.slice(-1)[0];
+			if (lastChannel != undefined) {
+				if (lastChannel.lastMessage != null) {
+					if (filterOnMonths(lastChannel.lastMessage.createdTimestamp, period)) { // retain only categories that have last posts older than the period specified
+						filteredCategories.push(category);	
+					}
+				}
+			}
+		}
+	});
+	return filteredCategories;
+}
+
 async function categories(interaction) {
 	interaction.editReply('Fetching channels and roles...');
 	const guildChannels = await interaction.guild.channels.fetch(), // need to filter out voice
@@ -155,6 +167,9 @@ async function categories(interaction) {
 	interaction.editReply('Channels and roles fetched, parsing...');
 	let processedCategories = await getLastMessage(guildChannels, guildRoles);
 	processedCategories = sortChannelsForCategory(processedCategories);
+	if (interaction.options.get("period") != null) {
+		processedCategories = filterCategories(processedCategories, interaction.options.getString("period"));
+	}
 	interaction.editReply('Channels parsed, rendering output...');
 	renderOutput(processedCategories, guildChannels, interaction);
 	renderLogfile(processedCategories, interaction.options.getString("period"));
