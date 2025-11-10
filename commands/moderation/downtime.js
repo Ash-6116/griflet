@@ -549,7 +549,7 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 	guildChannels.find(channel => channel.name === "bot-stuff").send({ content: "Weekly Downtime Log", embeds: outputEmbedArray });
 	logForFile += "---	---	---\n\n";
 	// replace ids with usernames
-	logForFile = replaceIdsWithUsernames(logForFile, await interaction.guild.members.fetch());
+	//logForFile = replaceIdsWithUsernames(logForFile, await interaction.guild.members.fetch()); // TODO - temporarily disabled as interaction.guild.members.fetch() is timing out and requires fixing
 	// Write to the log file
 	fs.appendFile("Logging.txt", logForFile.split("*").join(""), (err) => {
 		if (err) {
