@@ -351,7 +351,7 @@ function sortByCaravan(a, b) {
 	return 0;
 }
 
-async function councilAlert(questBoard, guildChannels, interaction, emptyCaravans, rosterOutput) {
+async function councilAlert(questBoard, guildChannels, interaction, emptyCaravans, rosterOutput, guildMembers) {
 	/**
 	 * This function needs a total overhaul from NGcounilAlert and councilAlert from Griflet v2.0
 	 * as the data structure has radically changed.
@@ -549,7 +549,7 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 	guildChannels.find(channel => channel.name === "bot-stuff").send({ content: "Weekly Downtime Log", embeds: outputEmbedArray });
 	logForFile += "---	---	---\n\n";
 	// replace ids with usernames
-	//logForFile = replaceIdsWithUsernames(logForFile, await interaction.guild.members.fetch()); // TODO - temporarily disabled as interaction.guild.members.fetch() is timing out and requires fixing
+	logForFile = replaceIdsWithUsernames(logForFile, guildMembers);
 	// Write to the log file
 	fs.appendFile("Logging.txt", logForFile.split("*").join(""), (err) => {
 		if (err) {
@@ -759,7 +759,7 @@ async function downtimeRoutine(interaction) {
 		console.error('JSON Strings file is missing!');
 		strings = "";
 	}
-	let councilAuthorisation = await councilAlert(questBoard, guildChannels, interaction, emptyCaravans, rosterOutput);
+	let councilAuthorisation = await councilAlert(questBoard, guildChannels, interaction, emptyCaravans, rosterOutput, guildMembers);
 	if (!options.includes("no announcement") && !options.includes("daily") && councilAuthorisation && (routine.length < 1 || routine.includes("announce"))) {
 		announce(questBoard.filter(quest => quest.waiting === "Blades"), guildRoles, guildChannels, messageForBlades, strings);
 	}

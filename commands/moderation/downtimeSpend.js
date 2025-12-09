@@ -401,8 +401,7 @@ async function rosterView(bladeData, interaction) {
 }
 
 async function downtimeSpend(interaction) {
-  const users = await interaction.guild.members.fetch(),
-    blade = interaction.options.getString('blade'),
+  const blade = interaction.options.getString('blade'),
     mode = interaction.options.getString('mode');
   console.log(interaction.options);
   let bladeData = await getData(blade);
