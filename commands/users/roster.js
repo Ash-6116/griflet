@@ -11,7 +11,6 @@ module.exports = {
 				.setRequired(true)),
 	async execute(interaction) {
 		await interaction.deferReply();
-		const users = await interaction.guild.members.fetch();
 		let blade = interaction.options.getString('blade');
 		let bladeData = await getData(blade);
 		rosterView(bladeData, interaction); // this relies on commands/moderation/downtimeSpend, output needs to be formatted in that file!
