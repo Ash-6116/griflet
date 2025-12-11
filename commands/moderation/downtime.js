@@ -312,7 +312,7 @@ async function dailyRoutine(interaction, guildChannels, guildRoles) {
 	checkNumberOfReactions(questBoard); // !! THIS CHECK MUST ALWAYS RUN LAST !!
 	interaction.editReply("Error checks complete, proceeding to process output...");
 	await markRunningCaravans(questBoard, guildChannels.filter(channel => channel.name === "quest-board")); // 25.09 - Seeking to add a reaction onto the quest-board entries of running caravans
-	return [questBoard, emptyCaravans]; // return questBoard and use this function as a daily command so it can be exported to a reactions autorun?
+	return [questBoard, emptyCaravans, guildMembers]; // return questBoard and use this function as a daily command so it can be exported to a reactions autorun?
 }
 
 async function markRunningCaravans(questBoard, questBoardDiscord) {
@@ -740,6 +740,7 @@ async function downtimeRoutine(interaction) {
 		dailyOutput = await dailyRoutine(interaction, guildChannels, guildRoles),
 		questBoard = dailyOutput[0],
 		emptyCaravans = dailyOutput[1],
+		guildMembers = dailyOutput[2],
 		messageForBlades = interaction.options.getString('message');
 	let routine = interaction.options.getString('routine'), options = interaction.options.getString('options');
 	if (options != null) {
