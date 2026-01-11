@@ -31,7 +31,7 @@
 	},
 	"vassals_alert": {
 		"gratitude": "  Many thanks.",
-		"party": "The party with be: ",
+		"party": "The party will be: ",
 		"prefix": "The following ",
 		"prefix_plural": "quests have been filled, ",
 		"prefix_singular": "quest has been filled, ",
