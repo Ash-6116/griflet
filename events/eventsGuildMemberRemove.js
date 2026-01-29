@@ -11,10 +11,9 @@ module.exports = {
 		const channels = await member.guild.channels.fetch();
 		console.log(member.user.username + " has left the server!");
 		console.log(member);
-		const result_of_checks = await misted(member.user.username, channels.filter(channel => channel.name === "roster"));
+		const result_of_checks = await misted(member.user.username, channels.filter(channel => channel.name === "roster"), channels.filter(channel => channel.name === "quest-board");
 		embed.setDescription(processOutput(result_of_checks));
 		embed.setThumbnail(member.user.displayAvatarURL());
-		//channels.find(channel => channel.name === "bot-stuff").send("**__" + member.user.username + " has left the server:__**\n" + processOutput(result_of_checks));
 		channels.find(channel => channel.name === "bot-stuff").send({ embeds: [embed] });
 		// 29/7/24 - Write the user's name into a file to be retrieved on Sunday during downtime
 		fs.appendFile("leavers.txt", member.user.username, (err) => {

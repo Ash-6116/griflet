@@ -26,7 +26,9 @@ async function misted(misted_user, roster, questBoard) {
 	outputMap.set("active", await find_member(await getAllSpreadsheetValues(process.env.spreadsheetId, "Roster"), misted_user)); // Second, check the Guild Roster | Active tab
 	outputMap.set("inactive", await find_member(await getAllSpreadsheetValues(process.env.spreadsheetId, "Inactive"), misted_user)); // Third, check the Guild Roster | Inactive tab
 	// Fourth, check the quest-board for any reactions from the user
-	// TODO - remember that misted_user is a USERNAME string, not a USER object
+	if (questBoard == undefined) {
+		return outputMap; // this is an emergency escape in case quest-boards wasn't passed in, processOutput will be able to continue without the reactions this way
+	}
 	const questKey = Array.from(questBoard.keys());
 	let reacted = []
 	for (k = 0; k < questKey.length; k++) {
