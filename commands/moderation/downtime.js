@@ -9,8 +9,7 @@ const { EmbedBuilder, SlashCommandBuilder } = require('discord.js'),
 	{ prompter } = require('../../shared_classes/prompter.js'), // Gives access to the prompter function for councilAlert
 	outputStyle = process.env.outputStyle, // sets either Legacy or Embed
 	{ resolveDate, categories } = require('./categories.js'), // Gives access to RESOLVEDATE function and categories function
-	{ roleTest, warnRole } = require('../../shared_classes/roleTest.js'), // ensures the user has the appropriate role for running the command
-	{ testUser } = require('../../shared_classes/user.js');
+	{ roleTest, warnRole } = require('../../shared_classes/roleTest.js'); // ensures the user has the appropriate role for running the command
 
 function roster(rosterChannel) { // TODO - overhaul?
 	return new Promise((resolve, reject) => {
@@ -28,9 +27,9 @@ function roster(rosterChannel) { // TODO - overhaul?
 							reactionsArray.push(reaction); // collecting reactions
 						});
 						if (reactionsArray.length > 0) {
-							reactedSheetPosters.push(testUser(message.author));
+							reactedSheetPosters.push(message.author.username);
 						} else {
-							newSheetPosters.push(testUser(message.author));
+							newSheetPosters.push(message.author.username);
 						}
 					}
 					resolve([newSheetPosters, reactedSheetPosters]);
@@ -54,6 +53,7 @@ async function gatherQuestBoard(interaction) {
 		if (item.content.length > 1) {
 			const itemSplit = item.content.split(/\r?\n/);
 			if (itemSplit[0] === "---") { // need t remove this element and move everything else down
+// could replace this with item.content.replace('-\n', '').replace(/\-/g,'').split('\n')[0]
 				itemSplit.splice(0, 1); // remove only one element
 			}
 			const name = itemSplit[0].replace(/\*/g, ""), // remove bold formatting
@@ -246,11 +246,13 @@ function checkNumberOfReactions(questBoard) {
 			const bladesEmoji = '⚔️';
 			if (!quest.hasOwnProperty('caravan')) {
 				const crossed_swords = quest.reactions.get(bladesEmoji);
-				console.log("Crossed Swords Reactions: " + crossed_swords.count);
-				if (crossed_swords.count > 0 && crossed_swords.count == 4) { // 4 = normal, 1 = debug
-					quest.waiting = 'Vassals';
-				} else if (crossed_swords.count > 0 && crossed_swords.count < 4) {
-					quest.waiting = 'Blades';
+				if (crossed_swords != undefined) {
+					console.log("Crossed Swords Reactions: " + crossed_swords.count);
+					if (crossed_swords.count > 0 && crossed_swords.count == 4) { // 4 = normal, 1 = debug
+						quest.waiting = 'Vassals';
+					} else if (crossed_swords.count > 0 && crossed_swords.count < 4) {
+						quest.waiting = 'Blades';
+					}
 				}
 			}
 		}
@@ -610,7 +612,7 @@ function prompt(guildChannels) {
 		if (fs.existsSync('prompts.txt')) {
 			fs.readFile('prompts.txt', 'utf8', (err, data) => {
 				if (err) {
-					return console.log(err);
+					return console.error(err);
 				}
 				var array = data.toString().split("\n");
 				specificMirror([standard + array[Math.floor(Math.random() * (array.length-1))]], confessional);
