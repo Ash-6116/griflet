@@ -1,11 +1,12 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
-  roleTest = require('../../shared_classes/roleTest.js'),
-  outputStyle = process.env.outputStyle;
+	roleTest = require('../../shared_classes/roleTest.js'),
+	outputStyle = process.env.outputStyle;
 
 function removeRole(roles, roleToRemove, user) {
+	console.log(roleToRemove);
 	let roleToRemoveId = -1;
 	if (roleToRemove.includes("&")) {
-		roleToRemoveId = roleToRemove.replace("<&", "").replace(">", "");
+		roleToRemoveId = roleToRemove.replace("<@&", "").replace(">", "");
 	} else {
 		// Received a string, need to see if it is in the roles first and retrieve the ID of any matches
 		const potentialRemoval = roles.filter(role => role.name === roleToRemove);
@@ -46,14 +47,14 @@ function removeCategory(guildChannels, categoryToRemove, user) {
 
 async function removal(interaction) {
   	const game = interaction.options.getString('category'),
-    	  role = interaction.options.getString('role');
+		role = interaction.options.getString('role');
   	// REMOVE THE ROLE FIRST, FOLLOWED BY ALL CHILD CHANNELS OF THE CATEGORY, FOLLOWED BY THE CATEGORY ITSELF
   	const roleResult = removeRole(await interaction.guild.roles.fetch(), role, interaction.user.username);
   	const categoryResult = removeCategory(await interaction.guild.channels.fetch(), game, interaction.user.username);
 	// Need to provide feedback on what was done);
 	let feedback = "";
 	if (roleResult) {
-		feedback += "- " + role + " removed successfully\n";
+		feedback += "- role removed successfully\n";
 	} else {
 		feedback += "- " + role + " was not removed, either it did not exist, or there were too many matching roles\n";
 	}
@@ -66,27 +67,29 @@ async function removal(interaction) {
                         .setTitle("Result of category removal")
 			.setDescription(feedback);
 	interaction.editReply({ embeds: [embed]});
+	console.log("Completed remove games routine");
   	return;
 }
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('remove_game')
-    .setDescription('Remove a game from the server')
-    .addStringOption(option => 
-      option.setName('category')
-        .setDescription('The game to remove')
-        .setRequired(true))
-    .addStringOption(option =>
-      option.setName('role')
-        .setDescription('The role to remove')
-        .setRequired(true)),
-  async execute(interaction) {
-    if (roleTest.roleTest(interaction)) {
-      await interaction.deferReply();
-      removal(interaction);
-    } else {
-      roleTest.warnRole(interaction, "downtime_spending"); // need to adjust this later
-    }
-  }
+	data: new SlashCommandBuilder()
+		.setName('remove_game')
+		.setDescription('Remove a game from the server')
+		.addStringOption(option => 
+			option.setName('category')
+				.setDescription('The game to remove')
+				.setRequired(true))
+		.addStringOption(option =>
+			option.setName('role')
+				.setDescription('The role to remove')
+				.setRequired(true)),
+	async execute(interaction) {
+		if (roleTest.roleTest(interaction)) {
+			await interaction.deferReply();
+			console.log("Started remove games routine...");
+			removal(interaction);
+		} else {
+			roleTest.warnRole(interaction, "remove_game");
+		}
+	}
 };

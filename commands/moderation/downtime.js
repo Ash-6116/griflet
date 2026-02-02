@@ -426,6 +426,9 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 			runningString = runningString.slice(0, -2) + "\n\n";
 		});
 		logForFile += runningString + "\n";
+		if (runningString.length == 0) { // runningString MUST have content or else .setDescription breaks, so filling it here
+			runningString += "No caravans running";
+		}
 		runningEmbed.setDescription(runningString);
 		outputEmbedArray.push(runningEmbed);
 	}
@@ -553,13 +556,16 @@ async function councilAlert(questBoard, guildChannels, interaction, emptyCaravan
 	// replace ids with usernames
 	logForFile = replaceIdsWithUsernames(logForFile, guildMembers);
 	// Write to the log file
-	fs.appendFile("Logging.txt", logForFile.split("*").join(""), (err) => {
-		if (err) {
-			console.log(err);
-		} else {
-			console.log("Downtime log file written");
-		}
-	});
+	if (process.env.Logging != undefined) {
+		//fs.appendFile("Logging.txt", logForFile.split("*").join(""), (err) => {
+		fs.appendFile(process.env.Logging, logForFile.split("*").join(""), (err) => {
+			if (err) {
+				console.log(err);
+			} else {
+				console.log("Downtime log file written");
+			}
+		});
+	}
 	// Await goahead from a council member before firing off pings, unless the silent option was passed or no errors detected
 	if (interaction.options.getString('options') != "silent") {
 		if (questBoard.filter(quest => quest.hasOwnProperty('error')).length == 0) {
@@ -753,7 +759,7 @@ async function downtimeRoutine(interaction) {
 	if (routine != null) {
 		routine = routine.toLowerCase().split(", ");
 	} else {
-		routine = []; // this way routine will always be an ARRAY that can be used with the switch statement below
+		routine = []; // this way routine will always be an ARRAY that can be used with the if statements below
 	}
 	let strings = { }; // empty Object to prevent errors being thrown
 	if (fs.existsSync('strings.txt')) {

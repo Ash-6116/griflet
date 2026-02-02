@@ -1,9 +1,8 @@
-const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('discord.js');
-const { testUser } = require('../../shared_classes/user.js');
-const { mirror } = require('../../shared_classes/output.js');
-const roleTest = require('../../shared_classes/roleTest.js');
-const outputStyle = process.env.outputStyle;
-const fs = require('fs');
+const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('discord.js'),
+	{ mirror } = require('../../shared_classes/output.js'),
+	roleTest = require('../../shared_classes/roleTest.js'),
+	outputStyle = process.env.outputStyle,
+	fs = require('fs');
 
 /**
  * Neph's recommended steps:
@@ -15,19 +14,19 @@ const fs = require('fs');
 **/
 
 function resolveDate(Timestamp) { // Still works in API v14 and requires no overhaul
-  let d = new Date(Timestamp);
-  return d.toDateString() + " " + d.getHours() + ":" + (d.getMinutes()<10?'0':'') + d.getMinutes();
+	let d = new Date(Timestamp);
+	return d.toDateString() + " " + d.getHours() + ":" + (d.getMinutes()<10?'0':'') + d.getMinutes();
 }
 
 function filterOnMonths(timestamp, period) {
-  let timestampDate = new Date(timestamp),
-    today = new Date();
-  if (period != null) {
-    today.setMonth(today.getMonth() - period); // adjusts the date backwards
-  } else {
-    return true; // no period means we want ALL data
-  }
-  return (timestampDate < today);
+	let timestampDate = new Date(timestamp),
+		today = new Date();
+	if (period != null) {
+		today.setMonth(today.getMonth() - period); // adjusts the date backwards
+	} else {
+		return true; // no period means we want ALL data
+	}
+	return (timestampDate < today);
 }
 
 function renderLogfile(processedCategories, period) {
@@ -44,13 +43,15 @@ function renderLogfile(processedCategories, period) {
 			}
 		}
 	});
-	fs.appendFile("Logging.txt", outputString, (err) => { // Write to the log file
-		if (err) {
-			console.log(err);
-		} else {
-			console.log("Categories log file written");
-		}
-	});
+	if (process.env.Logging != undefined) {
+		fs.appendFile(process.env.Logging, outputString, (err) => { // Write to the log file
+			if (err) {
+				console.log(err);
+			} else {
+				console.log("Categories log file written");
+			}
+		});
+	}
 	return;
 }
 

@@ -25,16 +25,17 @@ module.exports = {
 		.setName('ping')
 		.setDescription('Replies with Pong!'),
 	async execute(interaction) {
-		console.log(interaction.user);
-		await interaction.deferReply(); // used to reply to a longer command, ie categories
-		await wait(4000);
-		await produceOutput('Pong!', interaction); // alters the deferReply to a result
-		//await interaction.editReply('Pong!'); // alters the deferReply to a result
-		await wait(5000);
-		await produceOutput('Pong again!', interaction);
-		//await interaction.followUp('Pong again!'); // follows up an earlier reply (ie categories)
-		await wait(3000);
-		await produceOutput('Pong one more time!', interaction);
-		//await interaction.followUp('Pong one more time!'); // can be daisy chained, ie for categories
+		if (interaction.deferred == false) {
+			await interaction.deferReply(); // used to reply to a longer command, ie categories
+			console.log("Ping command reacting to " + interaction.user.username + " in " + interaction.member.guild.name);
+			await wait(4000);
+			await produceOutput('Pong!', interaction); // alters the deferReply to a result
+			await wait(5000);
+			await produceOutput('Pong again!', interaction);
+			await wait(3000);
+			await produceOutput('Pong one more time!', interaction)
+		} else {
+			console.log("Interaction deferred by another instance");
+		}
 	},
 };

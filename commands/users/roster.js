@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
-  { rosterView, getData } = require('../moderation/downtimeSpend.js');
+	{ rosterView, getData } = require('../moderation/downtimeSpend.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -14,5 +14,6 @@ module.exports = {
 		let blade = interaction.options.getString('blade');
 		let bladeData = await getData(blade);
 		rosterView(bladeData, interaction); // this relies on commands/moderation/downtimeSpend, output needs to be formatted in that file!
+		console.log("Ran roster command");
 	},
 };

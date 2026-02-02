@@ -24,5 +24,6 @@ module.exports = {
 			helpEmbed.addFields({name: name, value: value, inline: false}); 
 		});
 		interaction.reply({ embeds: [helpEmbed] });
+		console.log("Ran help command");
 	}
 }

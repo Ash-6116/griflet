@@ -2,11 +2,11 @@ const { EmbedBuilder } = require('discord.js'),
 	outputStyle = process.env.outputStyle;
 
 async function restOfOutput(array, interaction) {
-  for (let i=1; i < array.length; i++) {
-    await interaction.followUp(array[i]);
-    console.log(array[i]);
-  }
-  return;
+	for (let i=1; i < array.length; i++) {
+		await interaction.followUp(array[i]);
+		console.log(array[i]);
+	}
+	return;
 }
 
 function specificMirror(textArray, channel, Embed) {
@@ -63,7 +63,7 @@ async function mirror(textArray, interaction, Embed) {
   		console.log("sending only an Embed");
   		await interaction.followUp({ embeds: Embed});
   		console.log(Embed);
-  	}
+	}
   } else {
   	console.log("Invalid Output Style selected, Output Style must be set to either Legacy or Embed.");
   }

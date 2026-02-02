@@ -121,7 +121,11 @@ async function gatherDataForLevelling(sheet, previousBlade) {
         			console.error("prevBladeData wasn't set to correct range.  Check retired blade and try again");
         			break;
         	}
-        }
+        } else { // it SHOULD NOT be possible to reach this if the sheet has been checked properly, but just in case...
+		if (bladeLevel > 1) {
+			console.error("Player level is larger than 1 with no previous Blade cited, adding to roster as a level 1 character");
+		} // don't need a return as the ledger won't let the player have a higher level than 1 in these circumstances
+	}
         // 3 - generate ledger output for level gains and token bonus
         let outputLedgerData = await generateBonusLedgerData(sheet, awardedBonus, "T" + tier + " retirement: " + previousBlade);
         return outputLedgerData;
@@ -136,16 +140,20 @@ async function gatherDataForBackground(sheet) {
 	const bladeName = await fetchFromCharacterSheet(sheet, "C6:R6"),
 		bladeBackground = await fetchFromCharacterSheet(sheet, "Z5:AD5");
 	let outputArray = [];
-	// need to fetch Background sheet from Guild Roster
-	try {
+	try { // need to fetch Background sheet from Guild Roster
 		const backgrounds = await getSpreadsheetValues({
 			spreadsheetId: process.env.spreadsheetId,
 			sheetName: "Backgrounds",
 			auth: await getAuthToken(),
 			range: "A:B"
-		});
-		const backgroundGold = backgrounds.data.values.filter(background => background[0].toLowerCase() === bladeBackground[0][0].toLowerCase())[0][1];
-		outputArray.push(bladeName[0][0], 0, backgroundGold, 0, 0, 0, "Background", bladeBackground[0][0]);
+		}),
+			filtered=backgrounds.data.values.filter(background => background[0].toLowerCase() === bladeBackground[0][0].toLowerCase());
+		if (filtered.length > 0) {
+			const backgroundGold = filtered[0][1];
+			outputArray.push(bladeName[0][0], 0, backgroundGold, 0, 0, 0, "Background", bladeBackground[0][0]);
+		} else { // this deals with backgrounds data where it is NOT on the guild roster
+			console.error("Invalid background entered on character sheet for " + bladeName[0][0] + ": " + bladeBackground[0][0]);
+		}
 	} catch (error) {
 		console.error(error);
 	}
@@ -313,6 +321,7 @@ module.exports = {
 		if (playerDiscordData != undefined) {
 			playerDiscordData.roles.add(role);
 		} else {
+			console.error("Could not find player, please add role manually");
 			// Alert council that player could not be retrieved and will need the role added manually TODO
 		}
 		writeToRoster(sheet, playerDiscordData.user.username);
@@ -337,7 +346,6 @@ module.exports = {
 		} else {
 			console.log("Improper output style selected, must be either Legacy or Embed!!!");
 		}
-		//writeSigningToLedger(dataToGoToLedger);
 		writeToLedger(dataToGoToLedger);
 		interaction.deleteReply();
 	},

@@ -1,3 +1,5 @@
+// GOLD SOURCE: 2025.12.19
+
 const { Events } = require('discord.js');
 
 module.exports = {
