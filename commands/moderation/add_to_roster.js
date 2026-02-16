@@ -229,7 +229,7 @@ async function writeToRoster(sheet, player) {
 		primaryClass = bladeClass[0][0];
 	}
 	console.log(player);
-	let toRoster = ["@" + player, bladeFormulas[0], bladeName[0][0], bladeRace[0][0], primaryClass, secondaryClass, tertiaryClass, bladeFormulas[1], bladeFormulas[2], bladeFormulas[3], bladeFormulas[4], bladeFormulas[5], bladeFormulas[6], sheet]; // does not account for multiclassing or for formulas
+	let toRoster = ["@" + player, bladeFormulas[0], bladeName[0][0], bladeRace[0][0], primaryClass, secondaryClass, tertiaryClass, bladeFormulas[1], bladeFormulas[2], bladeFormulas[3], bladeFormulas[4], bladeFormulas[5], bladeFormulas[6], ,sheet]; // does not account for multiclassing or for formulas
 	try {
 		writeSpreadsheetValues({
 			spreadsheetId: process.env.spreadsheetId,
