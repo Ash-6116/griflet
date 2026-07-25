@@ -10,7 +10,7 @@ module.exports = {
 			embed = new EmbedBuilder()
 				.setTitle(member.user.username + " has joined the server!")
 				.setImage(member.user.displayAvatarURL())
-				.addFields({name: "username", value: member.user.username, inline: false}, {name: "Joined At", value: resolveDate(member.user.createdAt), inline: false});
+				.addFields({name: "username", value: member.user.username, inline: false}, {name: "joined discord on", value: resolveDate(member.user.createdAt), inline: false});
 		if (member.user.hasOwnProperty("globalName")) {
 			embed.addFields({name: "nickname", value: member.user.globalName, inline: false});
 		}
