@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
 	outputStyle = process.env.outputStyle,
 	{ getAuthToken, getSpreadsheet, getSpreadsheetValues, writeSpreadsheetValues } = require('../../shared_classes/googleSheetsService.js'),
-	{ checkFilter } = require(../../shared_classes/channels.js'),
+	{ checkFilter } = require('../../shared_classes/channels.js'),
 	{ writeToLedger } = require('./downtimeSpend.js');
 
 async function fetchFromCharacterSheet(url, range) {
