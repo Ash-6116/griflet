@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
 	roleTest = require('../../shared_classes/roleTest.js'),
+	{ checkFilter } = require('../../shared_classes/channels.js'),
 	outputStyle = process.env.outputStyle;
 
 function removeRole(roles, roleToRemove, user) {
@@ -50,7 +51,7 @@ async function removal(interaction) {
 		role = interaction.options.getString('role');
   	// REMOVE THE ROLE FIRST, FOLLOWED BY ALL CHILD CHANNELS OF THE CATEGORY, FOLLOWED BY THE CATEGORY ITSELF
   	const roleResult = removeRole(await interaction.guild.roles.fetch(), role, interaction.user.username);
-  	const categoryResult = removeCategory(await interaction.guild.channels.fetch(), game, interaction.user.username);
+  	const categoryResult = removeCategory(await checkFilter(interaction), game, interaction.user.username);
 	// Need to provide feedback on what was done);
 	let feedback = "";
 	if (roleResult) {

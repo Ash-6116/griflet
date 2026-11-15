@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js'),
 	roleTest = require('../../shared_classes/roleTest.js'),
 	outputStyle = process.env.outputStyle,
+	{ checkFilter } = require('../../shared_classes/channels.js'),
 	output = require('../../shared_classes/output.js');
 
 function sendMessageByFiltering(channel, message, channels) {
@@ -23,7 +24,7 @@ function sendMessageByFiltering(channel, message, channels) {
 async function sendMessage(interaction) {
 	const channel = interaction.options.getString('channel'),
 		message = interaction.options.getString('message'),
-		channels = await interaction.guild.channels.fetch();
+		channels = await checkFilter(interaction);
 	if (channel.includes("<") && channel.includes(">")) { // does not have <> means not a channel!!
 		const channelId = channel.split("<#")[1].split(">")[0];
 		if (channels.has(channelId)) {

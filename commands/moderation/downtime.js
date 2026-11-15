@@ -5,6 +5,7 @@
 const { EmbedBuilder, SlashCommandBuilder } = require('discord.js'),
 	fs = require('fs'),
 	ledger = require('../../shared_classes/ledger.js'), // Gives access to ledger functions for writing to gsheet
+	{ checkFilter } = require('../../shared_classes/channels.js'),
 	{ mirror, specificMirror } = require('../../shared_classes/output.js'),
 	{ prompter } = require('../../shared_classes/prompter.js'), // Gives access to the prompter function for councilAlert
 	outputStyle = process.env.outputStyle, // sets either Legacy or Embed
@@ -42,8 +43,11 @@ function roster(rosterChannel) { // TODO - overhaul?
 }
 
 async function gatherQuestBoard(interaction) {
-	const channels = await interaction.guild.channels.fetch(),
-		questChannel = channels.filter(channel => channel.name === "quest-board"),
+	const channels = await checkFilter(interaction);
+	channels.forEach(channel => {
+		console.log(channel);
+	});
+	const questChannel = channels.filter(channel => channel.name == "quest-board"),
 		questKey = Array.from(questChannel.keys())[0],
 		questBoard = await channels.get(questKey).messages.fetch(),
 		messageKeys = Array.from(questBoard.keys());
@@ -743,7 +747,7 @@ function vassals(questBoard, guildRoles, guildChannels, strings) {
 
 async function downtimeRoutine(interaction) {
 	const rosterOutput = await roster(interaction.guild.channels.cache.filter(channel => channel.name === 'roster' && channel.parentId === Array.from(interaction.guild.channels.cache.filter(category => category.name === 'Blades of Obsidian').keys())[0])),
-		guildChannels = await interaction.guild.channels.fetch(),
+		guildChannels = await checkFilter(interaction),
 		guildRoles = await interaction.guild.roles.fetch(),
 		dailyOutput = await dailyRoutine(interaction, guildChannels, guildRoles),
 		questBoard = dailyOutput[0],

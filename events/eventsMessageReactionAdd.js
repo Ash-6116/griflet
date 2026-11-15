@@ -1,6 +1,7 @@
 const { Events, EmbedBuilder } = require('discord.js'),
 	crossed_swords = '⚔️', bow_and_arrows = '🏹', white_check_mark = '✅',
 	fs = require('fs'),
+	{ checkFilter } = require('../shared_classes/channels.js'),
 	downtime = require("../commands/moderation/downtime.js");
 /**
  * Wish to use this module to run automated checks on reactions going to quest-board
@@ -27,7 +28,7 @@ function warnUser(channel, user, warning) { // warning needs to be an ARRAY of T
 }
 
 async function errorChecking(reaction, user, strings) {
-	const guildChannels = await reaction.message.guild.channels.fetch(),
+	const guildChannels = await checkFilter(reaction),
 		guildRoles = await reaction.message.guild.roles.fetch(),
 		alerts = strings.reaction_alerts;
 		warningChannel = guildChannels.get(Array.from(guildChannels.filter(channel => channel.name === "viewing-area").keys())[0]);
@@ -67,7 +68,7 @@ async function errorChecking(reaction, user, strings) {
 				const questFromBoard = questBoard.find(quest => quest.name === quest_name);
 				console.log("Finished gathering, starting checks...");
 				switch (true) { // rewrite as nested IF statements???
-					case (questFromBoard.hasOwnProperty("error")) :
+					case (questFromBoard.hasOwnProperty("error")): // this isn't triggering, why? TODO - fix
 						console.log("Detected that quest" + quest_name + " has a detected error");
 						if (questFromBoard.error.has("duplicatedReaction")) {
 							if (questFromBoard.error.get("duplicatedReaction").join().includes(user.username)) {

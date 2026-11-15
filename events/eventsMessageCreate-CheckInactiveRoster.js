@@ -1,4 +1,5 @@
 const { Events, EmbedBuilder } = require('discord.js'),
+	{ checkFilter } = require('../shared_classes/channels.js'),
 	{ getAllSpreadsheetValues } = require('../commands/moderation/downtimeSpend.js'),
 	{ find_member } = require('../commands/moderation/misted.js'),
 	outputStyle = process.env.outputStyle;
@@ -30,7 +31,7 @@ module.exports = {
 		// Wish to check if the message.author is in the Inactive roster, and ping bot-spam if they are
 		const result_of_checks = await find_member(await getAllSpreadsheetValues(process.env.spreadsheetId,  "Inactive"), message.author.username);
 		if (result_of_checks.length > 0) {
-			const guildChannels = await message.guild.channels.fetch(),
+			const guildChannels = await checkFilter(message),
 				guildRoles = await message.guild.roles.fetch(),
 				postChannel = guildChannels.get(message.channelId).name,
 				bladeChannels = ["viewing-area", "dice-tray", "blades-confessionals", "rec-room", "guild-hall", "courtyard", "sunroom", "shoppe", "library", "strathmore", "quest-caravan-1", "qc1-ooc", "quest-caravan-2", "qc2-ooc", "quest-caravan-3", "qc3-ooc", "quest-caravan-4", "qc4-ooc", "quest-caravan-5", "qc5-ooc", "quest-caravan-6", "qc6-ooc", "quest-caravan-7", "qc7-ooc", "quest-caravan-8", "qc8-ooc", "quest-caravan-9", "qc9-ooc", "quest-caravan-10", "qc10-ooc"];

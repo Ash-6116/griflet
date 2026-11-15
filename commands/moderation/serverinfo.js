@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
 	date = require('date-and-time'),
+	{ checkFilter } = require('../../shared_classes/channels.js'),
 	{ getAuthToken, writeSpreadsheetValues } = require('../../shared_classes/googleSheetsService.js');
 
 async function sendToGSheet(values) {
@@ -29,7 +30,7 @@ async function serverinfo(interaction) {
 	const users = await interaction.guild.members.fetch(), // collect all Users
 		owner = users.get(interaction.guild.ownerId), // collect the OwnerId
 		roles = await interaction.guild.roles.fetch(), // collect all Roles
-		channels = await interaction.guild.channels.fetch(), // collect all Channels
+		channels = await checkFilter(interaction), // collect all Channels
 		textChannels = channels.filter(channel => channel.type === 0), // collect all Text Channels by type
 		voiceChannels = channels.filter(channel => channel.type === 2), // collect all Voice Channels by type
 		categoryChannels = channels.filter(channel => channel.type === 4), // collect all Category Channels by type

@@ -1,4 +1,5 @@
 const { Events, EmbedBuilder } = require('discord.js'),
+	{ checkFilter } = require('../shared_classes/channels.js'),
 	{ resolveDate } = require("../commands/moderation/categories.js");
 
 module.exports = {
@@ -6,7 +7,7 @@ module.exports = {
 	async execute(member) {
 		console.log("Member has joined the channel...");
 		console.log(member);
-		const channels = await member.guild.channels.fetch(),
+		const channels = await checkFilter(member),
 			embed = new EmbedBuilder()
 				.setTitle(member.user.username + " has joined the server!")
 				.setImage(member.user.displayAvatarURL())

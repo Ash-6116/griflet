@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
 	roleTest = require('../../shared_classes/roleTest.js'),
+	{ checkFilter } = require('../../shared_classes/channels.js'),
 	{ getAllSpreadsheetValues } = require('./downtimeSpend.js');
 
 async function roster_check(roster, misted_user) {
@@ -107,7 +108,7 @@ module.exports = {
 			await interaction.deferReply();
 			const outputEmbed = new EmbedBuilder()
 				.setTitle("Result of check on " + interaction.options.getString('user'))
-			const channels = await interaction.guild.channels.fetch();
+			const channels = await checkFilter(interaction);
 			const result_of_checks = await misted(interaction.options.getString('user'), channels.filter(channel => channel.name === "roster"), channels.filter(channel => channel.name === "quest-board"));
 			outputEmbed.setDescription(processOutput(result_of_checks));
 			interaction.editReply({ embeds: [outputEmbed] });

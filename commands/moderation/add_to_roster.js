@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
 	outputStyle = process.env.outputStyle,
 	{ getAuthToken, getSpreadsheet, getSpreadsheetValues, writeSpreadsheetValues } = require('../../shared_classes/googleSheetsService.js'),
+	{ checkFilter } = require(../../shared_classes/channels.js'),
 	{ writeToLedger } = require('./downtimeSpend.js');
 
 async function fetchFromCharacterSheet(url, range) {
@@ -287,7 +288,7 @@ module.exports = {
 			retirementBonusSource = interaction.options.getString('previous_blade'),
 			playerData = await interaction.guild.members.fetch(),
 			roles = await interaction.guild.roles.fetch(),
-			channels = await interaction.guild.channels.fetch(),
+			channels = await checkFilter(interaction),
 			viewing = channels.find(channel => channel.name === "viewing-area"),
 			bladeName = await fetchFromCharacterSheet(sheet, "C6:R6"),
 			role = roles.find(role => role.name === "Blades"),

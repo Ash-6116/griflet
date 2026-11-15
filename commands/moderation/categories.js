@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('discord.js'),
 	{ mirror } = require('../../shared_classes/output.js'),
 	roleTest = require('../../shared_classes/roleTest.js'),
+	{ checkFilter } = require('../../shared_classes/channels.js'),
 	outputStyle = process.env.outputStyle,
 	fs = require('fs');
 
@@ -163,7 +164,7 @@ function filterCategories(processedCategories, period) {
 
 async function categories(interaction) {
 	interaction.editReply('Fetching channels and roles...');
-	const guildChannels = await interaction.guild.channels.fetch(), // need to filter out voice
+	const guildChannels = await checkFilter(interaction), // need to filter out voice
 		guildRoles = await interaction.guild.roles.fetch();
 	interaction.editReply('Channels and roles fetched, parsing...');
 	let processedCategories = await getLastMessage(guildChannels, guildRoles);

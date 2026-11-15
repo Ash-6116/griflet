@@ -1,4 +1,5 @@
 const { Events, EmbedBuilder } = require('discord.js'),
+	{ checkFilter } = require('../shared_classes/channels.js'),
 	{ getAllSpreadsheetValues } = require('../commands/moderation/downtimeSpend.js'),
 	{ misted, processOutput } = require('../commands/moderation/misted.js'),
 	fs = require('fs');
@@ -8,7 +9,7 @@ module.exports = {
 	async execute(member) {
 		const embed = new EmbedBuilder()
 			.setTitle(member.user.username + " has left the server!")
-		const channels = await member.guild.channels.fetch();
+		const channels = await checkFilter(member);
 		console.log(member.user.username + " has left the server!");
 		console.log(member);
 		const result_of_checks = await misted(member.user.username, channels.filter(channel => channel.name === "roster"), channels.filter(channel => channel.name === "quest-board"));

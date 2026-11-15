@@ -1,4 +1,5 @@
-const { Events, EmbedBuilder } = require('discord.js');
+const { Events, EmbedBuilder } = require('discord.js'),
+	{ checkFilter } = require('../shared_classes/channels.js');
 
 module.exports = {
 	name: Events.GuildMemberUpdate,
@@ -6,7 +7,7 @@ module.exports = {
 		console.log("Member has been updated...");
 		console.log(newMember);
 		if (oldMember.pending && !newMember.pending) {
-			const channels = await newMember.guild.channels.fetch(),
+			const channels = await checkFilter(newMember),
 				embed = new EmbedBuilder()
 					.setTitle(newMember.user.username + " has accepted the server rules!")
 					.setImage(newMember.user.displayAvatarURL())

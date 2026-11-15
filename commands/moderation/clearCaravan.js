@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'),
 	roleTest = require('../../shared_classes/roleTest.js'),
+	{ checkFilter } = require('../../shared_classes/channels.js'),
 	outputStyle = process.env.outputStyle;
 
 function determineRole(caravan) {
@@ -52,7 +53,7 @@ function clearRole(role, members) {
 }
 
 async function clearCaravan(interaction) {
-	const channels = await interaction.guild.channels.fetch(),
+	const channels = await checkFilter(interaction),
 		roles = await interaction.guild.roles.fetch(),
 		members = await interaction.guild.members.fetch(),
 		caravanName = interaction.options.getString('caravan'),
