@@ -28,7 +28,7 @@ function warnUser(channel, user, warning) { // warning needs to be an ARRAY of T
 }
 
 async function errorChecking(reaction, user, strings) {
-	const guildChannels = await checkFilter(reaction),
+	const guildChannels = await checkFilter(reaction.message),
 		guildRoles = await reaction.message.guild.roles.fetch(),
 		alerts = strings.reaction_alerts;
 		warningChannel = guildChannels.get(Array.from(guildChannels.filter(channel => channel.name === "viewing-area").keys())[0]);
